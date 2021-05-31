@@ -1,0 +1,17 @@
+C:\Progetti\WindowsSrvPDV\bin\Debug\WindowsSrvPDV.exe.config
+C:\Progetti\WindowsSrvPDV\bin\Debug\WindowsSrvPDV.exe
+C:\Progetti\WindowsSrvPDV\bin\Debug\WindowsSrvPDV.pdb
+C:\Progetti\WindowsSrvPDV\bin\Debug\Newtonsoft.Json.dll
+C:\Progetti\WindowsSrvPDV\bin\Debug\Serilog.dll
+C:\Progetti\WindowsSrvPDV\bin\Debug\Serilog.Sinks.File.dll
+C:\Progetti\WindowsSrvPDV\bin\Debug\System.Drawing.Common.dll
+C:\Progetti\WindowsSrvPDV\bin\Debug\Newtonsoft.Json.xml
+C:\Progetti\WindowsSrvPDV\bin\Debug\Serilog.xml
+C:\Progetti\WindowsSrvPDV\bin\Debug\Serilog.Sinks.File.pdb
+C:\Progetti\WindowsSrvPDV\bin\Debug\Serilog.Sinks.File.xml
+C:\Progetti\WindowsSrvPDV\obj\Debug\WindowsSrvPDV.ProjectInstaller.resources
+C:\Progetti\WindowsSrvPDV\obj\Debug\WindowsSrvPDV.csproj.GenerateResource.cache
+C:\Progetti\WindowsSrvPDV\obj\Debug\WindowsSrvPDV.csproj.CoreCompileInputs.cache
+C:\Progetti\WindowsSrvPDV\obj\Debug\WindowsSrvPDV.csproj.CopyComplete
+C:\Progetti\WindowsSrvPDV\obj\Debug\WindowsSrvPDV.exe
+C:\Progetti\WindowsSrvPDV\obj\Debug\WindowsSrvPDV.pdb
