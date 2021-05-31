@@ -254,7 +254,7 @@ namespace GwpLayoutTouchAsar
 
                     if (CreateP_REGPAR_file(P_RegParData, (lt.Casse != null ? lt.Casse.ToList<int>() : null)))
                     {
-                        DeleteTipicoParFile(parTipicoToDelete);
+                        DeleteTipicoParFile(parTipicoToDelete); 
 
                         Log.Information("Created directory old");
                         Directory.CreateDirectory(ConfigurationManager.AppSettings["Directory_Casse"].ToString() + "\\" + "old");
