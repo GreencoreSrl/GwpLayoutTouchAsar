@@ -1,4 +1,12 @@
-﻿using Newtonsoft.Json;
+﻿//-------------------------------------     ----------------------------------------
+// File Name        : BasketController.cs
+// Project          : GwpLayoutTouchAsar
+// Creation Date    : 09/05/2021
+// Creation Author  : Simone Sambruni
+//-----------------------------------------------------------------------------
+// Copyright(C) Greencore srl 2021
+
+using Newtonsoft.Json;
 using Serilog;
 using System;
 using System.Collections.Generic;
@@ -6,6 +14,7 @@ using System.Configuration;
 using System.Data;
 using System.Drawing;
 using System.IO;
+using System.IO.Ports;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -26,11 +35,13 @@ namespace GwpLayoutTouchAsar
     public partial class GwpLayoutTouchAsar : ServiceBase
     {
         private static Thread td = null;
+        private static List<string> fileTipico = new List<string>();
         private static FileSystemWatcher watcher = null;
         private const string S_PLUREF = "S_PLUREF.DAT";
         private const string P_REGPAR = "P_REGPAR.DAT";
+        private const string P_XXXPAR = "P_???PAR.DAT";
+        private const string Dictionary = "Dictionary.bin";
         private static string nameBackupDirectory = "";
-        private static List<string> parTipicoToDelete = new List<string>();
 
         public GwpLayoutTouchAsar()
         {
@@ -84,7 +95,6 @@ namespace GwpLayoutTouchAsar
             {
                 Log.Information("Keyboard.Json file founded in the directory");
 
-
                 FileOperations(ActonFile.Coping, e.FullPath, (ConfigurationManager.AppSettings["Directory_Processing"].ToString() + "\\" + e.Name));
 
                 var json = File.ReadAllText(e.FullPath);
@@ -100,10 +110,7 @@ namespace GwpLayoutTouchAsar
                     // TODO LOG
                     Log.Error("Json validation KO");
                     Log.Error("Exception occurred : " + ex.Message);
-                    GwpFlusso request = new GwpFlusso();
-                    request.Step = "ERROR";
-                    request.Response = "File JSON non valido";
-                    SendHTTPRequest(request);
+                    UpdateStatus(string.Empty, string.Empty,  0, 0, 0);
                     string newDirectory = (ConfigurationManager.AppSettings["Directory_Error"].ToString() + "\\" + DateTime.Now.ToString("ddMMyyyyHHmm"));
                     Directory.CreateDirectory(ConfigurationManager.AppSettings["Directory_Error"].ToString() + "\\" + newDirectory);
                     FileOperations(ActonFile.Moving, e.FullPath, (newDirectory + "\\" + e.Name));
@@ -111,6 +118,36 @@ namespace GwpLayoutTouchAsar
             }
         }
 
+        private static void UpdateStatus(string flussoName, string status, int cassa, int recordTotale, int recordInErrore)
+        {
+            GwpFlusso request = new GwpFlusso();
+            request.Date = DateTime.Now;
+            request.Terminal = 999;
+
+            if (string.IsNullOrEmpty(flussoName))
+            {
+                request.Step = "ERROR";
+                request.ReceivedRecords = 0;
+                request.AppliedRecords = 0;
+                request.ErrorRecords = 0;
+                request.Response = "File JSON non valido";
+            }
+            else if (cassa != 0)
+            {
+                request.Terminal = cassa;
+                request.Response = "KO";
+            }
+            else
+                 {
+                    request.Response = "OK";
+                 }
+
+            request.Step = status;
+            request.ReceivedRecords = recordTotale;
+            request.AppliedRecords = recordTotale - recordInErrore;
+            request.ErrorRecords = recordInErrore;
+            SendHTTPRequest(request);
+        }
 
         private static bool ProcessingJSON(Keyboard  keyboards)
         {
@@ -119,6 +156,7 @@ namespace GwpLayoutTouchAsar
 
             try
             {
+                int recordInError = 0;
                 nameBackupDirectory = ConfigurationManager.AppSettings["Directory_Backup"].ToString() + "\\" + keyboards.NomeFlusso + DateTime.Now.ToString("ddMMyyyyHHmm");
                 Log.Information("Creating Backup directory " + nameBackupDirectory);
                 Directory.CreateDirectory(nameBackupDirectory);
@@ -131,155 +169,203 @@ namespace GwpLayoutTouchAsar
 
                 Log.Information("Processing image list...");
 
-                foreach (Immagini img in keyboards.Immagini)
+                try
                 {
-                    MemoryStream data = null;
-                    if (imgChecked(img, out data))
+                    foreach (Immagini img in keyboards.Immagini)
                     {
-                        using (FileStream file = new FileStream(ConfigurationManager.AppSettings["Directory_Image"].ToString() + "\\" + img.Nome, FileMode.Create, FileAccess.Write))
+                        MemoryStream data = null;
+                        if (imgChecked(img, out data))
                         {
-                            data.WriteTo(file);
+                            using (FileStream file = new FileStream(ConfigurationManager.AppSettings["Directory_Image"].ToString() + "\\" + img.Nome, FileMode.Create, FileAccess.Write))
+                            {
+                                data.WriteTo(file);
+                            }
+                        }
+                        else
+                        {
+
                         }
                     }
-                    else
-                    {
-
-                    }
+                }
+                catch (Exception)
+                {
+                    recordInError++;
                 }
 
                 Log.Information("Processing Layouts list...");
+               
 
                 foreach (Layout lt in keyboards.Layouts)
                 {
-                    foreach (Pagine pg in lt.Pagine)
+                    try
                     {
-                        numeroPulsante = 0;
-                        string data = "";
-                        foreach (Pulsante pl in pg.Pulsante)
+                        foreach (Pagine pg in lt.Pagine)
                         {
-                            if (pl != null)
+                            numeroPulsante = 0;
+                            string data = "";
+                            foreach (Pulsante pl in pg.Pulsante)
                             {
-                                numeroPulsante++;
-                                data = pg.Codice.ToString().PadLeft(4, '0') + ":" + (numeroPulsante).ToString().PadLeft(4, ' ') + ":" + pl.Valore.PadLeft(16, ' ') + ":0000:" + pl.Descrizione.PadRight(20, ' ');
-                                S_PluRefData.Add(data);
+                                if (pl != null)
+                                {
+                                    numeroPulsante++;
+                                    data = pg.Codice.ToString().PadLeft(4, '0') + ":" + (numeroPulsante).ToString().PadLeft(4, ' ') + ":" + pl.Valore.PadLeft(16, ' ') + ":0000:" + pl.Descrizione.PadRight(20, ' ');
+                                    S_PluRefData.Add(data);
+                                }
                             }
                         }
-                    }
 
-                     if (CreateS_PLUREF_file(S_PluRefData, keyboards.PulisciTutto))
-                    {
-                        Log.Information("Created directory old");
-                        Directory.CreateDirectory(ConfigurationManager.AppSettings["Directory_Casse"].ToString() + "\\" + "old");
-                        Log.Information("Copied current file S_PLUREF.DAT into old directory...");
-                        FileOperations(ActonFile.Coping, (ConfigurationManager.AppSettings["Directory_Casse"].ToString() + "\\" + S_PLUREF), (ConfigurationManager.AppSettings["Directory_Casse"].ToString() + "\\old" + S_PLUREF));
-                        Log.Information("Moved new file S_PLUREF.dat into POS directory...");
-                        FileOperations(ActonFile.Coping, (ConfigurationManager.AppSettings["Directory_Temporary"].ToString() + "\\" + S_PLUREF), (ConfigurationManager.AppSettings["Directory_Casse"].ToString() + "\\" + S_PLUREF));
-                        FileOperations(ActonFile.Coping, (ConfigurationManager.AppSettings["Directory_Temporary"].ToString() + "\\" + S_PLUREF), nameBackupDirectory + "\\" + S_PLUREF);
-                        
+                        if (CreateS_PLUREF_file(S_PluRefData, keyboards.PulisciTutto))
+                        {
+                            Log.Information("Created directory old");
+                            Directory.CreateDirectory(ConfigurationManager.AppSettings["Directory_Casse"].ToString() + "\\" + "old");
+                            Log.Information("Copied current file S_PLUREF.DAT into old directory...");
+                            FileOperations(ActonFile.Coping, (ConfigurationManager.AppSettings["Directory_Casse"].ToString() + "\\" + S_PLUREF), (ConfigurationManager.AppSettings["Directory_Casse"].ToString() + "\\old" + S_PLUREF));
+                            Log.Information("Moved new file S_PLUREF.dat into POS directory...");
+                            FileOperations(ActonFile.Coping, (ConfigurationManager.AppSettings["Directory_Temporary"].ToString() + "\\" + S_PLUREF), (ConfigurationManager.AppSettings["Directory_Casse"].ToString() + "\\" + S_PLUREF));
+                            FileOperations(ActonFile.Coping, (ConfigurationManager.AppSettings["Directory_Temporary"].ToString() + "\\" + S_PLUREF), nameBackupDirectory + "\\" + S_PLUREF);
+                        }
+                        else
+                        {
+                            Log.Information("S_PLUREF.DAT file creation failed");
+                            string newDirectory = (ConfigurationManager.AppSettings["Directory_Error"].ToString() + "\\" + DateTime.Now.ToString("ddMMyyyyHHmm"));
+                            Log.Information("Directory creation " + newDirectory);
+                            Directory.CreateDirectory(ConfigurationManager.AppSettings["Directory_Error"].ToString() + "\\" + newDirectory);
+                            Log.Information("Cancelled files");
+                            FileOperations(ActonFile.Moving, (ConfigurationManager.AppSettings["Directory_Processing"].ToString() + "\\" + ConfigurationManager.AppSettings["FilenameJson"].ToString()), (newDirectory + "\\" + ConfigurationManager.AppSettings["FilenameJson"].ToString()));
+                            FileOperations(ActonFile.Deleting, (ConfigurationManager.AppSettings["Directory_Temporary"].ToString() + "\\*.*"), "");
+                            return false;
+                        }
                     }
-                    else
+                    catch (Exception)
                     {
-                        Log.Information("S_PLUREF.DAT file creation failed");
-                        string newDirectory = (ConfigurationManager.AppSettings["Directory_Error"].ToString() + "\\" + DateTime.Now.ToString("ddMMyyyyHHmm"));
-                        Log.Information("Directory creation " + newDirectory);
-                        Directory.CreateDirectory(ConfigurationManager.AppSettings["Directory_Error"].ToString() + "\\" + newDirectory);
-                        Log.Information("Cancelled files");
-                        FileOperations(ActonFile.Moving, (ConfigurationManager.AppSettings["Directory_Processing"].ToString() + "\\" + ConfigurationManager.AppSettings["FilenameJson"].ToString()), (newDirectory + "\\" + ConfigurationManager.AppSettings["FilenameJson"].ToString()));
-                        FileOperations(ActonFile.Deleting, (ConfigurationManager.AppSettings["Directory_Temporary"].ToString() + "\\*.*"), "");
-                        return false;
+                        recordInError++;
                     }
-
 
                     numeroPulsante = 0;
                     pulsante = "";
                     tastiera = "DYKY3:";
 
-                    foreach (Pulsante pl in lt.TastieraPrincipale.Pulsante)
+                    try
                     {
-                        if (pl != null)
+                        foreach (Pulsante pl in lt.TastieraPrincipale.Pulsante)
                         {
-                            numeroPulsante++;
-                            tastiera += "D" + numeroPulsante.ToString();
-                            switch (pl.Azione)
+                            if (pl != null)
                             {
-                                case 0:
-                                    pulsante = "PRES" + numeroPulsante.ToString() + ":DYNA:" + pl.Valore.PadLeft(2, '0').PadLeft(16, ' ') + ":" + pl.Descrizione.PadRight(18, ' ');
-                                    break;
-                                case 1:
-                                    pulsante = "PRES" + numeroPulsante.ToString() + ":LIST:" + pl.Valore.PadRight(4, '0').PadLeft(16, ' ') + ":" + pl.Descrizione.PadRight(18, ' ');
-                                    break;
-                                case 2:
-                                    pulsante = "PRES" + numeroPulsante.ToString() + ":0000:" + pl.Valore.PadLeft(16, ' ') + ":" + pl.Descrizione.PadRight(18, ' ');
-                                    break;
-                            }
-
-                            P_RegParData.Add(pulsante);
-                        }
-                    }
-
-                    tastiera = tastiera.PadRight(46, '0');
-                    P_RegParData.Add(tastiera);
-
-                    if (lt.TastiereDestra != null)
-                    {
-                        foreach (Tastieredestra td in lt.TastiereDestra)
-                        {
-                            numeroPulsante = 0;
-                            pulsante = "";
-
-                            foreach (Pulsante pl in td.Pulsante)
-                            {
-                                if (pl != null)
+                                numeroPulsante++;
+                                tastiera += "D" + numeroPulsante.ToString();
+                                switch (pl.Azione)
                                 {
-                                    switch (pl.Azione)
-                                    {
-                                        case 1:
-                                            numeroPulsante++;
-                                            pulsante = "PD" + td.Codice.PadLeft(2, '0') + numeroPulsante.ToString() + ":LIST:" + pl.Valore.PadLeft(4, '0').PadLeft(16, ' ') + ":" + pl.Descrizione.PadRight(18, ' ');
-                                            break;
-                                        case 2:
-                                            numeroPulsante++;
-                                            pulsante = "PD" + td.Codice.PadLeft(2, '0') + numeroPulsante.ToString() + ":0000:" + pl.Valore.PadLeft(16, ' ') + ":" + pl.Descrizione.PadRight(18, ' ');
-                                            break;
-                                    }
+                                    case 0:
+                                        pulsante = "PRES" + numeroPulsante.ToString() + ":DYNA:" + pl.Valore.PadLeft(2, '0').PadLeft(16, ' ') + ":" + pl.Descrizione.PadRight(18, ' ');
+                                        break;
+                                    case 1:
+                                        pulsante = "PRES" + numeroPulsante.ToString() + ":LIST:" + pl.Valore.PadRight(4, '0').PadLeft(16, ' ') + ":" + pl.Descrizione.PadRight(18, ' ');
+                                        break;
+                                    case 2:
+                                        pulsante = "PRES" + numeroPulsante.ToString() + ":0000:" + pl.Valore.PadLeft(16, ' ') + ":" + pl.Descrizione.PadRight(18, ' ');
+                                        break;
+                                }
 
-                                    P_RegParData.Add(pulsante);
+                                P_RegParData.Add(pulsante);
+                            }
+                        }
+
+                        tastiera = tastiera.PadRight(46, '0');
+                        P_RegParData.Add(tastiera);
+
+                        if (lt.TastiereDestra != null)
+                        {
+                            foreach (Tastieredestra td in lt.TastiereDestra)
+                            {
+                                numeroPulsante = 0;
+                                pulsante = "";
+
+                                foreach (Pulsante pl in td.Pulsante)
+                                {
+                                    if (pl != null)
+                                    {
+                                        switch (pl.Azione)
+                                        {
+                                            case 1:
+                                                numeroPulsante++;
+                                                pulsante = "PD" + td.Codice.PadLeft(2, '0') + numeroPulsante.ToString() + ":LIST:" + pl.Valore.PadLeft(4, '0').PadLeft(16, ' ') + ":" + pl.Descrizione.PadRight(18, ' ');
+                                                break;
+                                            case 2:
+                                                numeroPulsante++;
+                                                pulsante = "PD" + td.Codice.PadLeft(2, '0') + numeroPulsante.ToString() + ":0000:" + pl.Valore.PadLeft(16, ' ') + ":" + pl.Descrizione.PadRight(18, ' ');
+                                                break;
+                                        }
+
+                                        P_RegParData.Add(pulsante);
+                                    }
                                 }
                             }
                         }
+
+                        string versione = "VER00:" + keyboards.NomeFlusso.PadLeft(40, '0');
+                        P_RegParData.Add(versione);
+
+                        if (CreateP_REGPAR_file(P_RegParData, (lt.Casse != null ? lt.Casse.ToList<int>() : null)))
+                        {
+                            Log.Information("Created directory old");
+                            Directory.CreateDirectory(ConfigurationManager.AppSettings["Directory_Casse"].ToString() + "\\" + "old");
+                              
+                            Log.Information("Copied current file P_REGPAR.DAT into old directory");
+                            FileOperations(ActonFile.Coping, (ConfigurationManager.AppSettings["Directory_Casse"].ToString() + "\\" + P_REGPAR), (ConfigurationManager.AppSettings["Directory_Casse"].ToString() + "\\old" + P_REGPAR));
+
+                            Log.Information("Copied current file P_REGPAR.DAT into backup directory");
+                            FileOperations(ActonFile.Coping, (ConfigurationManager.AppSettings["Directory_Temporary"].ToString() + "\\" + P_REGPAR), nameBackupDirectory + "\\" + P_REGPAR);
+
+                            
+                            if (fileTipico.Count > 0)
+                            {
+                                if (File.Exists(ConfigurationManager.AppSettings["Directory_Casse"].ToString() + "\\" + Dictionary))
+                                {
+                                    Dictionary<string, string> flussoCasse = Read(ConfigurationManager.AppSettings["Directory_Casse"].ToString() + "\\" + Dictionary);
+
+                                    foreach (string fileTp in fileTipico)
+                                    {
+                                        bool isCorrect = false;
+
+                                        if (flussoCasse.ContainsKey(fileTp.Substring(2, 3)))
+                                        {
+                                            string value = string.Empty;
+                                            flussoCasse.TryGetValue(fileTp.Substring(2, 3), out value);
+                                            if (value == keyboards.NomeFlusso) isCorrect = true;
+                                            else flussoCasse[fileTp.Substring(2, 3)] = keyboards.NomeFlusso;
+                                        }
+                                        else flussoCasse.Add(fileTp.Substring(2, 3), keyboards.NomeFlusso);
+
+                                        if (!isCorrect)
+                                        {
+                                            UpdateStatus(keyboards.NomeFlusso, "NOTAPPLIED", Convert.ToInt32(fileTp.Substring(2, 3)), 0, 0);
+                                        }
+                                    }
+                                }
+                            }
+
+                            Log.Information("Moved new file P_REGPAR.Dat into POS directory...");
+                            FileOperations(ActonFile.Coping, (ConfigurationManager.AppSettings["Directory_Temporary"].ToString() + "\\" + P_REGPAR), (ConfigurationManager.AppSettings["Directory_Casse"].ToString() + "\\" + P_REGPAR));
+                            
+                        }
+                        else
+                        {
+                            Log.Information("P_REGPAR.DAT file creation failed");
+                            string newDirectory = (ConfigurationManager.AppSettings["Directory_Error"].ToString() + "\\" + DateTime.Now.ToString("ddMMyyyyHHmm"));
+                            Log.Information("Directory creation " + newDirectory);
+                            Directory.CreateDirectory(ConfigurationManager.AppSettings["Directory_Error"].ToString() + "\\" + newDirectory);
+                            Log.Information("Cancelled files");
+                            FileOperations(ActonFile.Moving, (ConfigurationManager.AppSettings["Directory_Processing"].ToString() + "\\" + ConfigurationManager.AppSettings["FilenameJson"].ToString()), (newDirectory + "\\" + ConfigurationManager.AppSettings["FilenameJson"].ToString()));
+                            FileOperations(ActonFile.Deleting, (ConfigurationManager.AppSettings["Directory_Temporary"].ToString() + "\\*.*"), "");
+                        }
                     }
-
-                    string versione = "VER00:" + keyboards.NomeFlusso.PadLeft(40, '0');
-                    P_RegParData.Add(versione);
-
-                    if (CreateP_REGPAR_file(P_RegParData, (lt.Casse != null ? lt.Casse.ToList<int>() : null)))
+                    catch (Exception)
                     {
-                        DeleteTipicoParFile(parTipicoToDelete); 
-
-                        Log.Information("Created directory old");
-                        Directory.CreateDirectory(ConfigurationManager.AppSettings["Directory_Casse"].ToString() + "\\" + "old");
-                        Log.Information("Copied current file P_REGPAR.DAT into old directory...");
-                        FileOperations(ActonFile.Coping, (ConfigurationManager.AppSettings["Directory_Casse"].ToString() + "\\" + P_REGPAR), (ConfigurationManager.AppSettings["Directory_Casse"].ToString() + "\\old" + P_REGPAR));
-                        Log.Information("Moved new file P_REGPAR.Dat into POS directory...");
-                        FileOperations(ActonFile.Coping, (ConfigurationManager.AppSettings["Directory_Temporary"].ToString() + "\\" + P_REGPAR), (ConfigurationManager.AppSettings["Directory_Casse"].ToString() + "\\" + P_REGPAR));
-                        FileOperations(ActonFile.Coping, (ConfigurationManager.AppSettings["Directory_Temporary"].ToString() + "\\" + P_REGPAR), nameBackupDirectory + "\\" + P_REGPAR);
-                        GwpFlusso request = new GwpFlusso();
-                        request.Step = "APPLIED";
-                        request.Response = "Flusso: " + keyboards.NomeFlusso;
-                        Log.Information("Send status update");
-                        SendHTTPRequest(request);
-                    }
-                    else
-                    {
-                        Log.Information("P_REGPAR.DAT file creation failed");
-                        string newDirectory = (ConfigurationManager.AppSettings["Directory_Error"].ToString() + "\\" + DateTime.Now.ToString("ddMMyyyyHHmm"));
-                        Log.Information("Directory creation " + newDirectory);
-                        Directory.CreateDirectory(ConfigurationManager.AppSettings["Directory_Error"].ToString() + "\\" + newDirectory);
-                        Log.Information("Cancelled files");
-                        FileOperations(ActonFile.Moving, (ConfigurationManager.AppSettings["Directory_Processing"].ToString() + "\\" + ConfigurationManager.AppSettings["FilenameJson"].ToString()), (newDirectory + "\\" + ConfigurationManager.AppSettings["FilenameJson"].ToString()));
-                        FileOperations(ActonFile.Deleting, (ConfigurationManager.AppSettings["Directory_Temporary"].ToString() + "\\*.*"), "");
+                        recordInError++;
                     }
 
+                    // Sending status update
+                    UpdateStatus(keyboards.NomeFlusso, "SERVER", 0, 3, recordInError);
                 }
 
                 return true;
@@ -294,6 +380,7 @@ namespace GwpLayoutTouchAsar
                 return false;
             }
         }
+
 
         private static void DeleteTipicoParFile(List<string> parTipicoToDelete)
         {
@@ -310,6 +397,7 @@ namespace GwpLayoutTouchAsar
                 }
             }
         }
+
 
         private static bool imgChecked(Immagini img, out MemoryStream imageStream)
         {
@@ -348,10 +436,10 @@ namespace GwpLayoutTouchAsar
         {
             try
             {
-                parTipicoToDelete.Clear();
-
+             
                 if (casse != null)
                 {
+                    fileTipico.Clear();
                     foreach (int value in casse)
                     {
                         string filename = "P_" + value.ToString().PadLeft(3, '0') + "PAR.DAT";
@@ -385,12 +473,21 @@ namespace GwpLayoutTouchAsar
                                 fileNewContent.Sort();
                                 File.WriteAllLines((ConfigurationManager.AppSettings["Directory_Temporary"].ToString() + "\\" + filename), fileNewContent.ToArray());
                                 Log.Information("Saving P_XXXPAR.DAT file to directory: " + ConfigurationManager.AppSettings["Directory_Asar"].ToString());
+                                fileTipico.Add(filename);
                             }
                             else
                             {
-                                // Save tipico file to deleting from directory casse 
-                                parTipicoToDelete.Add(filename);
+                                // Create canc_P_XXXPar.DAT into temporary directory
+                                FileOperations(ActonFile.Creating, (ConfigurationManager.AppSettings["Directory_Temporary"].ToString() + "\\" + "canc" + filename), string.Empty);
+                                Log.Information("Create canc_P_XXXPar.DAT into temporary directory: " + filename);
+
+                                // Delete tipico file from directory casse
+                                FileOperations(ActonFile.Deleting, (ConfigurationManager.AppSettings["Directory_Asar"].ToString() + "\\" + filename), string.Empty);
                                 Log.Information("File Tipico is equal to Standard so deleting it: " + filename);
+
+                                // Copy canc_P_XXXParDAT into backup directory
+                                FileOperations(ActonFile.Coping, (ConfigurationManager.AppSettings["Directory_Temporary"].ToString() + "\\" + "canc" + filename), nameBackupDirectory + "\\" + "canc" + filename);
+                                Log.Information("Coping canc_P_XXXPar.DAT into backup directory: " + filename);
 
                                 List<string> dataWorked = new List<string>(data);
                                 string[] pagine = dataWorked.ToArray();
@@ -415,6 +512,7 @@ namespace GwpLayoutTouchAsar
                                 Log.Information("Saving P_REGPAR.DAT file to directory: " + ConfigurationManager.AppSettings["Directory_Asar"].ToString());
                             }
                         }
+
                     }
                     return true;
                 }
@@ -583,6 +681,43 @@ namespace GwpLayoutTouchAsar
             }
             catch (WebException wex) { Log.Error("ERR - SendHttpRequest: " + wex.Message); }
             catch (HttpRequestException hre) { Log.Error("ERR - SendHttpRequest: " + hre.Message); }
+        }
+
+
+        private static void Write(Dictionary<string, string> dictionary, string file)
+        {
+            using (FileStream fs = File.OpenWrite(file))
+            using (BinaryWriter writer = new BinaryWriter(fs))
+            {
+                // Put count.
+                writer.Write(dictionary.Count);
+                // Write pairs.
+                foreach (var pair in dictionary)
+                {
+                    writer.Write(pair.Key);
+                    writer.Write(pair.Value);
+                }
+            }
+        }
+
+
+        private static Dictionary<string, string> Read(string file)
+        {
+            var result = new Dictionary<string, string>();
+            using (FileStream fs = File.OpenRead(file))
+            using (BinaryReader reader = new BinaryReader(fs))
+            {
+                // Get count.
+                int count = reader.ReadInt32();
+                // Read in all pairs.
+                for (int i = 0; i < count; i++)
+                {
+                    string key = reader.ReadString();
+                    string value = reader.ReadString();
+                    result[key] = value;
+                }
+            }
+            return result;
         }
     }
 }

@@ -33,3 +33,4 @@ C:\Progetti\GwpLayoutTouchAsar\obj\Debug\GwpLayoutTouchAsar.csproj.CoreCompileIn
 C:\Progetti\GwpLayoutTouchAsar\obj\Debug\GwpLayoutTouchAsar.csproj.CopyComplete
 C:\Progetti\GwpLayoutTouchAsar\obj\Debug\GwpLayoutTouchAsar.exe
 C:\Progetti\GwpLayoutTouchAsar\obj\Debug\GwpLayoutTouchAsar.pdb
+C:\Progetti\GwpLayoutTouchAsar\obj\Debug\GwpLayoutTouchAsar.csprojAssemblyReference.cache
