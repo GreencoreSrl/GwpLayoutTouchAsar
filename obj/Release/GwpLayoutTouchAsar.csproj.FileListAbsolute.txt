@@ -1,0 +1,17 @@
+C:\Progetti\GwpLayoutTouchAsar\bin\Release\GwpLayoutTouchAsar.exe.config
+C:\Progetti\GwpLayoutTouchAsar\bin\Release\GwpLayoutTouchAsar.exe
+C:\Progetti\GwpLayoutTouchAsar\bin\Release\GwpLayoutTouchAsar.pdb
+C:\Progetti\GwpLayoutTouchAsar\bin\Release\Newtonsoft.Json.dll
+C:\Progetti\GwpLayoutTouchAsar\bin\Release\Serilog.dll
+C:\Progetti\GwpLayoutTouchAsar\bin\Release\Serilog.Sinks.File.dll
+C:\Progetti\GwpLayoutTouchAsar\bin\Release\System.Drawing.Common.dll
+C:\Progetti\GwpLayoutTouchAsar\bin\Release\Newtonsoft.Json.xml
+C:\Progetti\GwpLayoutTouchAsar\bin\Release\Serilog.xml
+C:\Progetti\GwpLayoutTouchAsar\bin\Release\Serilog.Sinks.File.pdb
+C:\Progetti\GwpLayoutTouchAsar\bin\Release\Serilog.Sinks.File.xml
+C:\Progetti\GwpLayoutTouchAsar\obj\Release\GwpLayoutTouchAsar.ProjectInstaller.resources
+C:\Progetti\GwpLayoutTouchAsar\obj\Release\GwpLayoutTouchAsar.csproj.GenerateResource.cache
+C:\Progetti\GwpLayoutTouchAsar\obj\Release\GwpLayoutTouchAsar.csproj.CoreCompileInputs.cache
+C:\Progetti\GwpLayoutTouchAsar\obj\Release\GwpLayoutTouchAsar.csproj.CopyComplete
+C:\Progetti\GwpLayoutTouchAsar\obj\Release\GwpLayoutTouchAsar.exe
+C:\Progetti\GwpLayoutTouchAsar\obj\Release\GwpLayoutTouchAsar.pdb

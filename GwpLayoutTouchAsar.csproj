@@ -80,7 +80,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="InstallService.bat" />
     <None Include="packages.config" />
+    <None Include="UninstallService.bat" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="ProjectInstaller.resx">

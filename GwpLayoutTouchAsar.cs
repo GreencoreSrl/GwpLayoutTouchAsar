@@ -219,7 +219,7 @@ namespace GwpLayoutTouchAsar
                             Log.Information("Created directory old");
                             Directory.CreateDirectory(ConfigurationManager.AppSettings["Directory_Casse"].ToString() + "\\" + "old");
                             Log.Information("Copied current file S_PLUREF.DAT into old directory...");
-                            FileOperations(ActonFile.Coping, (ConfigurationManager.AppSettings["Directory_Casse"].ToString() + "\\" + S_PLUREF), (ConfigurationManager.AppSettings["Directory_Casse"].ToString() + "\\old" + S_PLUREF));
+                            FileOperations(ActonFile.Coping, (ConfigurationManager.AppSettings["Directory_Casse"].ToString() + "\\" + S_PLUREF), (ConfigurationManager.AppSettings["Directory_Casse"].ToString() + "\\old\\" + S_PLUREF));
                             Log.Information("Moved new file S_PLUREF.dat into POS directory...");
                             FileOperations(ActonFile.Coping, (ConfigurationManager.AppSettings["Directory_Temporary"].ToString() + "\\" + S_PLUREF), (ConfigurationManager.AppSettings["Directory_Casse"].ToString() + "\\" + S_PLUREF));
                             FileOperations(ActonFile.Coping, (ConfigurationManager.AppSettings["Directory_Temporary"].ToString() + "\\" + S_PLUREF), nameBackupDirectory + "\\" + S_PLUREF);
@@ -311,7 +311,7 @@ namespace GwpLayoutTouchAsar
                             Directory.CreateDirectory(ConfigurationManager.AppSettings["Directory_Casse"].ToString() + "\\" + "old");
                               
                             Log.Information("Copied current file P_REGPAR.DAT into old directory");
-                            FileOperations(ActonFile.Coping, (ConfigurationManager.AppSettings["Directory_Casse"].ToString() + "\\" + P_REGPAR), (ConfigurationManager.AppSettings["Directory_Casse"].ToString() + "\\old" + P_REGPAR));
+                            FileOperations(ActonFile.Coping, (ConfigurationManager.AppSettings["Directory_Casse"].ToString() + "\\" + P_REGPAR), (ConfigurationManager.AppSettings["Directory_Casse"].ToString() + "\\old\\" + P_REGPAR));
 
                             Log.Information("Copied current file P_REGPAR.DAT into backup directory");
                             FileOperations(ActonFile.Coping, (ConfigurationManager.AppSettings["Directory_Temporary"].ToString() + "\\" + P_REGPAR), nameBackupDirectory + "\\" + P_REGPAR);
@@ -512,6 +512,30 @@ namespace GwpLayoutTouchAsar
                                 Log.Information("Saving P_REGPAR.DAT file to directory: " + ConfigurationManager.AppSettings["Directory_Asar"].ToString());
                             }
                         }
+                        else
+                        {
+                            List<string> dataWorked = new List<string>(data);
+                            string[] pagine = dataWorked.ToArray();
+                            string[] content = File.ReadAllLines(ConfigurationManager.AppSettings["Directory_Asar"].ToString() + "\\" + P_REGPAR);
+
+                            for (int indexP = 0; indexP < pagine.Length; indexP++)
+                            {
+                                for (int indexC = 0; indexC < content.Length; indexC++)
+                                {
+                                    if (content[indexC].StartsWith(pagine[indexP].Substring(0, 5)))
+                                    {
+                                        content[indexC] = pagine[indexP];
+                                        dataWorked.Remove(pagine[indexP]);
+                                    }
+                                }
+                            }
+
+                            List<string> newContent = new List<string>(content.ToArray<string>());
+                            newContent.AddRange(dataWorked.AsEnumerable<string>());
+                            newContent.Sort();
+                            File.WriteAllLines((ConfigurationManager.AppSettings["Directory_Temporary"].ToString() + "\\" + P_REGPAR), newContent.ToArray());
+                            Log.Information("Saving P_REGPAR.DAT file to directory: " + ConfigurationManager.AppSettings["Directory_Temporary"].ToString());
+                        }
 
                     }
                     return true;
@@ -621,7 +645,7 @@ namespace GwpLayoutTouchAsar
                     newContent.AddRange(data.AsEnumerable<string>());
                     newContent.Sort();
                     File.WriteAllLines((ConfigurationManager.AppSettings["Directory_Temporary"].ToString() + "\\" + S_PLUREF), newContent.ToArray());
-                    Log.Information("Saving S_PLUREF.DAT file to directory: " + ConfigurationManager.AppSettings["Directory_Asar"].ToString());
+                    Log.Information("Saving S_PLUREF.DAT file to directory: " + ConfigurationManager.AppSettings["Directory_Temporary"].ToString());
                     return true;
                 }
             }
