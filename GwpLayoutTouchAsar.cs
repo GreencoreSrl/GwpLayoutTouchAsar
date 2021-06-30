@@ -571,6 +571,8 @@ namespace GwpLayoutTouchAsar
                                     newContent.Sort();
                                     File.WriteAllLines((ConfigurationManager.AppSettings["Directory_Temporary"].ToString() + "\\" + filename), newContent.ToArray());
                                     Log.Information("Saving " + filename +" file to directory: " + ConfigurationManager.AppSettings["Directory_Temporary"].ToString());
+                                    fileTipico.Add(filename);
+                                    fileTipico.Sort();
                             }
                         }
                         else
@@ -629,6 +631,8 @@ namespace GwpLayoutTouchAsar
                                 newContent.Sort();
                                 File.WriteAllLines((ConfigurationManager.AppSettings["Directory_Temporary"].ToString() + "\\" + filename), newContent.ToArray());
                                 Log.Information("Saving " + filename + " file to directory: " + ConfigurationManager.AppSettings["Directory_Temporary"].ToString());
+                                fileTipico.Add(filename);
+                                fileTipico.Sort();
                             }
                         }
                     }
