@@ -42,7 +42,6 @@ namespace GwpLayoutTouchAsar
         private const string Dictionary = "Dictionary.bin";
         private static string nameBackupDirectory = "";
 
-
         public GwpLayoutTouchAsar()
         {
             InitializeComponent();
