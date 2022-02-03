@@ -74,7 +74,7 @@ namespace GwpLayoutTouchAsar
             .WriteTo.File(ConfigurationManager.AppSettings["Directory_Log"].ToString(), rollingInterval: RollingInterval.Day)
             .CreateLogger();
 
-            Log.Information("Starting GwpLayoutTouchAsar Service ver 1.0.0.0");
+            Log.Information("Starting GwpLayoutTouchAsar Service ver 1.0.0.1");
 
             watcher = new FileSystemWatcher(ConfigurationManager.AppSettings["Directory_Incoming"].ToString(), "*.json");
             watcher.NotifyFilter = NotifyFilters.FileName
@@ -173,7 +173,8 @@ namespace GwpLayoutTouchAsar
 
         private static void ProcessingJSON(Keyboard  keyboards)
         {
-           
+
+            bool chiusuraAutomatica = false;
             List<string> P_RegParData = new List<string>();
             List<string> S_PluRefData = new List<string>();
             Dictionary<string, string> flussoCasse = new Dictionary<string, string>();
@@ -279,7 +280,7 @@ namespace GwpLayoutTouchAsar
 
                     try
                     {
-                        foreach (Pulsante pl in lt.TastieraPrincipale.Pulsante)
+                        foreach (PulsanteTastiera pl in lt.TastieraPrincipale.Pulsante)
                         {
                             if (pl != null)
                             {
@@ -287,16 +288,21 @@ namespace GwpLayoutTouchAsar
                                 tastieraDYKY3 += "D" + numeroPulsante.ToString();
                                 tastieraDYTX3 += "D0" + numeroPulsante.ToString();
 
+                                if (!string.IsNullOrEmpty(pl.AltriDettagli))
+                                {
+                                    chiusuraAutomatica = pl.AltriDettagli.Split('=').ElementAt(1).ToLower().Equals("true") ? true : false;
+                                }
+
                                 switch (pl.Azione)
                                 {
                                     case 0:
-                                        pulsante = "PRES" + numeroPulsante.ToString() + ":DYNA:" + pl.Valore.PadLeft(2, '0').PadLeft(16, ' ') + ":" + pl.Descrizione.PadRight(18, ' ');
+                                        pulsante = "PRES" + numeroPulsante.ToString() + ":DYNA:" + " " +  pl.Valore.PadLeft(2, '0').PadLeft(15, ' ') + ":" + pl.Descrizione.PadRight(18, ' ');
                                         break;
                                     case 1:
-                                        pulsante = "PRES" + numeroPulsante.ToString() + ":LIST:" + pl.Valore.PadLeft(4, '0').PadLeft(16, ' ') + ":" + pl.Descrizione.PadRight(18, ' ');
+                                        pulsante = "PRES" + numeroPulsante.ToString() + ":LIST:" + (chiusuraAutomatica ? "1" : " ") + pl.Valore.PadLeft(4, '0').PadLeft(15, ' ') + ":" + pl.Descrizione.PadRight(18, ' ');
                                         break;
                                     case 2:
-                                        pulsante = "PRES" + numeroPulsante.ToString() + ":0000:" + pl.Valore.PadLeft(16, ' ') + ":" + pl.Descrizione.PadRight(18, ' ');
+                                        pulsante = "PRES" + numeroPulsante.ToString() + ":0000:" + " " + pl.Valore.PadLeft(15, ' ') + ":" + pl.Descrizione.PadRight(18, ' ');
                                         break;
                                 }
 
@@ -317,18 +323,24 @@ namespace GwpLayoutTouchAsar
                                 numeroPulsante = 0;
                                 pulsante = "";
 
-                                foreach (Pulsante pl in td.Pulsante)
+                                foreach (PulsanteTastiera pl in td.Pulsante)
                                 {
                                     if (pl != null)
                                     {
+
+                                        if (!string.IsNullOrEmpty(pl.AltriDettagli))
+                                        {
+                                            chiusuraAutomatica = pl.AltriDettagli.Split('=').ElementAt(1).ToLower().Equals("true") ? true : false;
+                                        }
+
                                         switch (pl.Azione)
                                         {
                                             case 1:                                              
-                                                pulsante = "PD" + td.Codice.PadLeft(2, '0') + numeroPulsante.ToString() + ":LIST:" + pl.Valore.PadLeft(4, '0').PadLeft(16, ' ') + ":" + pl.Descrizione.PadRight(18, ' ');
+                                                pulsante = "PD" + td.Codice.PadLeft(2, '0') + numeroPulsante.ToString() + ":LIST:" + (chiusuraAutomatica ? "1" : " ") + pl.Valore.PadLeft(4, '0').PadLeft(15, ' ') + ":" + pl.Descrizione.PadRight(18, ' ');
                                                 numeroPulsante++;
                                                 break;
                                             case 2:
-                                                pulsante = "PD" + td.Codice.PadLeft(2, '0') + numeroPulsante.ToString() + ":0000:" + pl.Valore.PadLeft(16, ' ') + ":" + pl.Descrizione.PadRight(18, ' ');
+                                                pulsante = "PD" + td.Codice.PadLeft(2, '0') + numeroPulsante.ToString() + ":0000: " + pl.Valore.PadLeft(15, ' ') + ":" + pl.Descrizione.PadRight(18, ' ');
                                                 numeroPulsante++;
                                                 break;
                                         }

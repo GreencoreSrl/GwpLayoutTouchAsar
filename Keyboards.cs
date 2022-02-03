@@ -28,13 +28,13 @@ namespace GwpLayoutTouchAsar
     public class Tastieraprincipale
     {
         public int Codice { get; set; }
-        public Pulsante[] Pulsante { get; set; }
+        public PulsanteTastiera[] Pulsante { get; set; }
     }
 
     public class Tastieredestra
     {
         public string Codice { get; set; }
-        public Pulsante[] Pulsante { get; set; }
+        public PulsanteTastiera[] Pulsante { get; set; }
     }
 
     public class Pagine
@@ -49,11 +49,18 @@ namespace GwpLayoutTouchAsar
         public string File { get; set; }
     }
 
+    public class PulsanteTastiera
+    {
+        public string Descrizione { get; set; }
+        public int Azione { get; set; }
+        public string Valore { get; set; }
+        public string AltriDettagli { get; set; }
+    }
+
     public class Pulsante
     {
         public string Descrizione { get; set; }
         public int Azione { get; set; }
         public string Valore { get; set; }
     }
-
 }
