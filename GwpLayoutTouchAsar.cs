@@ -74,7 +74,7 @@ namespace GwpLayoutTouchAsar
             .WriteTo.File(ConfigurationManager.AppSettings["Directory_Log"].ToString(), rollingInterval: RollingInterval.Day)
             .CreateLogger();
 
-            Log.Information("Starting GwpLayoutTouchAsar Service ver 1.0.0.1");
+            Log.Information("Starting GwpLayoutTouchAsar Service ver 1.0.0.1-P-3129");
 
             watcher = new FileSystemWatcher(ConfigurationManager.AppSettings["Directory_Incoming"].ToString(), "*.json");
             watcher.NotifyFilter = NotifyFilters.FileName
