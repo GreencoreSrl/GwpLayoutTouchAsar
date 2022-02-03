@@ -251,7 +251,18 @@ namespace GwpLayoutTouchAsar
                             Log.Information("Copied new file S_PLUREF.dat into backup directory...");
                             FileOperations(ActonFile.Coping, (ConfigurationManager.AppSettings["Directory_Temporary"].ToString() + "\\" + S_PLUREF), nameBackupDirectory + "\\" + S_PLUREF);
                             Log.Information("Copied new file S_PLUREF.dat into casse directory...");
-                            FileOperations(ActonFile.Coping, (ConfigurationManager.AppSettings["Directory_Temporary"].ToString() + "\\" + S_PLUREF), (ConfigurationManager.AppSettings["Directory_Casse"].ToString() + "\\" +  S_PLUREF));                           
+                            FileOperations(ActonFile.Coping, (ConfigurationManager.AppSettings["Directory_Temporary"].ToString() + "\\" + S_PLUREF), (ConfigurationManager.AppSettings["Directory_Casse"].ToString() + "\\" +  S_PLUREF));
+                            
+                            //DMA-P-3129#A BEG
+                            Log.Information("Created directory old (casseLan)");
+                            Directory.CreateDirectory(ConfigurationManager.AppSettings["Directory_CasseLan"].ToString() + "\\" + "old");
+
+                            Log.Information("Copied current file S_PLUREF.DAT into old directory (casseLan)...");                            
+                            FileOperations(ActonFile.Coping, (ConfigurationManager.AppSettings["Directory_CasseLan"].ToString() + "\\" + S_PLUREF), (ConfigurationManager.AppSettings["Directory_CasseLan"].ToString() + "\\old\\" + S_PLUREF));
+
+                            Log.Information("Copied new file S_PLUREF.dat into casse directory...");
+                            FileOperations(ActonFile.Coping, (ConfigurationManager.AppSettings["Directory_Temporary"].ToString() + "\\" + S_PLUREF), (ConfigurationManager.AppSettings["Directory_CasseLan"].ToString() + "\\" + S_PLUREF));
+                            //DMA-P-3129#A END
                         }
                         else
                         {
@@ -359,6 +370,9 @@ namespace GwpLayoutTouchAsar
                             Log.Information("Created directory old");
                             Directory.CreateDirectory(ConfigurationManager.AppSettings["Directory_Casse"].ToString() + "\\" + "old");
 
+                            Log.Information("Created directory old (casseLan");
+                            Directory.CreateDirectory(ConfigurationManager.AppSettings["Directory_CasseLan"].ToString() + "\\" + "old");
+
                             if (fileTipico.Count > 0)
                             {
                                 foreach (string filename in fileTipico)
@@ -369,6 +383,14 @@ namespace GwpLayoutTouchAsar
                                     FileOperations(ActonFile.Coping, (ConfigurationManager.AppSettings["Directory_Temporary"].ToString() + "\\" + filename), nameBackupDirectory + "\\" + filename);
                                     Log.Information("Copied new " + filename + " into casse directory");
                                     FileOperations(ActonFile.Coping, (ConfigurationManager.AppSettings["Directory_Temporary"].ToString() + "\\" + filename), (ConfigurationManager.AppSettings["Directory_Casse"].ToString() + "\\" + filename));
+
+                                    //DMA-P-3129#A BEG
+                                    Log.Information("Copied current " + filename + " into old directory (casseLan)");
+                                    FileOperations(ActonFile.Coping, (ConfigurationManager.AppSettings["Directory_CasseLan"].ToString() + "\\" + filename), (ConfigurationManager.AppSettings["Directory_CasseLan"].ToString() + "\\old\\" + filename));
+
+                                    Log.Information("Copied new " + filename + " into casse directory (casseLan)");
+                                    FileOperations(ActonFile.Coping, (ConfigurationManager.AppSettings["Directory_Temporary"].ToString() + "\\" + filename), (ConfigurationManager.AppSettings["Directory_CasseLan"].ToString() + "\\" + filename));
+                                    //DMA-P-3129#A END
                                 }
 
                             }
@@ -380,6 +402,15 @@ namespace GwpLayoutTouchAsar
                                 FileOperations(ActonFile.Coping, (ConfigurationManager.AppSettings["Directory_Temporary"].ToString() + "\\" + P_REGPAR), nameBackupDirectory + "\\" + P_REGPAR);
                                 Log.Information("Copied new P_REGPAR.DAT into casse directory");
                                 FileOperations(ActonFile.Coping, (ConfigurationManager.AppSettings["Directory_Temporary"].ToString() + "\\" + P_REGPAR), (ConfigurationManager.AppSettings["Directory_Casse"].ToString() + "\\" + P_REGPAR));
+
+                                //DMA-P-3129#A BEG
+                                Log.Information("Copied current file P_REGPAR.DAT into old directory (casseLan)");
+                                FileOperations(ActonFile.Coping, (ConfigurationManager.AppSettings["Directory_CasseLan"].ToString() + "\\" + P_REGPAR), (ConfigurationManager.AppSettings["Directory_CasseLan"].ToString() + "\\old\\" + P_REGPAR));
+
+                                Log.Information("Copied new P_REGPAR.DAT into casse directory (casseLan)");
+                                FileOperations(ActonFile.Coping, (ConfigurationManager.AppSettings["Directory_Temporary"].ToString() + "\\" + P_REGPAR), (ConfigurationManager.AppSettings["Directory_CasseLan"].ToString() + "\\" + P_REGPAR));
+                                //DMA-P-3129#A END
+
                             }
 
 
