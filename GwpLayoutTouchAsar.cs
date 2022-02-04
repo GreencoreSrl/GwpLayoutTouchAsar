@@ -50,9 +50,12 @@ namespace GwpLayoutTouchAsar
 
         protected override void OnStart(string[] args)
         {
-            // Only for debbugging mode
-            // System.Diagnostics.Debugger.Launch();
 
+#if DEBUG
+            // Only for debbugging mode
+            Console.Out.WriteLine("***** SONO IN DEBUG MODE *****");
+            System.Diagnostics.Debugger.Launch();
+#endif
             td = new Thread(new ThreadStart(worker));
             td.Start();
         }
@@ -74,7 +77,7 @@ namespace GwpLayoutTouchAsar
             .WriteTo.File(ConfigurationManager.AppSettings["Directory_Log"].ToString(), rollingInterval: RollingInterval.Day)
             .CreateLogger();
 
-            Log.Information("Starting GwpLayoutTouchAsar Service ver 1.0.0.1-P-3129");
+            Log.Information("Starting GwpLayoutTouchAsar Service ver 1.0.0.2-P-3129");
 
             watcher = new FileSystemWatcher(ConfigurationManager.AppSettings["Directory_Incoming"].ToString(), "*.json");
             watcher.NotifyFilter = NotifyFilters.FileName
@@ -370,7 +373,7 @@ namespace GwpLayoutTouchAsar
                             Log.Information("Created directory old");
                             Directory.CreateDirectory(ConfigurationManager.AppSettings["Directory_Casse"].ToString() + "\\" + "old");
 
-                            Log.Information("Created directory old (casseLan");
+                            Log.Information("Created directory old (casseLan)");
                             Directory.CreateDirectory(ConfigurationManager.AppSettings["Directory_CasseLan"].ToString() + "\\" + "old");
 
                             if (fileTipico.Count > 0)
@@ -519,10 +522,12 @@ namespace GwpLayoutTouchAsar
                     fileTipico.Clear();
                     foreach (int value in casse)
                     {
+                        Log.Information("cassa: " + value + " - tipico: " + tipico);
                         if (!tipico)
-                        {
+                        {                          
                             string filename = "P_" + value.ToString().PadLeft(3, '0') + "PAR.DAT";
-                            if (File.Exists(ConfigurationManager.AppSettings["Directory_Asar"].ToString() + "\\" + filename))
+                            string path = ConfigurationManager.AppSettings["Directory_Asar"].ToString() + "\\" + filename;
+                            if (File.Exists(path))
                             {
                                  if (!CompareWithStandard(filename))
                                  {
@@ -555,7 +560,7 @@ namespace GwpLayoutTouchAsar
                                     fileTipico.Add(filename);
                                     fileTipico.Sort();
                                 }
-                                else
+                                else //compare true
                                 {
                                     // Create canc_P_XXXPar.DAT into temporary directory
                                     FileOperations(ActonFile.Creating, (ConfigurationManager.AppSettings["Directory_Temporary"].ToString() + "\\" + "canc" + filename), string.Empty);
@@ -592,7 +597,7 @@ namespace GwpLayoutTouchAsar
                                     Log.Information("Saving P_REGPAR.DAT file to directory: " + ConfigurationManager.AppSettings["Directory_Temporary"].ToString());
                                 }
                             }
-                            else {
+                            else { //file tipico non esiste
                                     List<string> dataWorked = new List<string>(data);
                                     string[] pagine = dataWorked.ToArray();
                                     string[] content = File.ReadAllLines(ConfigurationManager.AppSettings["Directory_Asar"].ToString() + "\\" + P_REGPAR);
@@ -614,12 +619,15 @@ namespace GwpLayoutTouchAsar
                                     newContent.Sort();
                                     File.WriteAllLines((ConfigurationManager.AppSettings["Directory_Temporary"].ToString() + "\\" + filename), newContent.ToArray());
                                     Log.Information("Saving " + filename +" file to directory: " + ConfigurationManager.AppSettings["Directory_Temporary"].ToString());
-                                    fileTipico.Add(filename);
-                                    fileTipico.Sort();
+                                    
+                                    //se il file tipico non esiste non lo aggiungo
+                                    //fileTipico.Add(filename);
+                                    //fileTipico.Sort();
                             }
                         }
-                        else
+                        else //tipico
                         {
+                            Log.Information("entro nell else . tipico vale true");
                             string filename = "P_" + value.ToString().PadLeft(3, '0') + "PAR.DAT";
                             if (File.Exists(ConfigurationManager.AppSettings["Directory_Asar"].ToString() + "\\" + filename))
                             {
@@ -715,6 +723,8 @@ namespace GwpLayoutTouchAsar
 
         private static Boolean CompareWithStandard(string filename)
         {
+            Log.Information("ENTRO in CompareWithStandard");
+            Boolean flag = false;
             // Make a list copy...
             List<string> regParData = File.ReadAllLines(ConfigurationManager.AppSettings["Directory_Asar"].ToString() + "\\" + filename).ToList<string>();
             List<string> workedData = regParData.ToList<string>();
@@ -740,8 +750,11 @@ namespace GwpLayoutTouchAsar
                 }
             }
 
+            Log.Information("ESCO Da CompareWithStandard");
             // Compared tipico file with standard file...
-            return (regParData.SequenceEqual(File.ReadAllLines(ConfigurationManager.AppSettings["Directory_Asar"].ToString() + "\\" + P_REGPAR)));
+            flag = regParData.SequenceEqual(File.ReadAllLines(ConfigurationManager.AppSettings["Directory_Asar"].ToString() + "\\" + P_REGPAR));
+            Log.Information("ESCO Da CompareWithStandard. flag: " + flag);
+            return flag;
         }
 
 

@@ -1,5 +1,16 @@
 {
   "Version": 1,
-  "ProjectMap": {},
-  "NextColorIndex": 0
+  "ProjectMap": {
+    "a2fe74e1-b743-11d0-ae1a-00a0c90fffc3": {
+      "ProjectGuid": "a2fe74e1-b743-11d0-ae1a-00a0c90fffc3",
+      "DisplayName": "Miscellaneous Files",
+      "ColorIndex": -1
+    },
+    "19483eac-f612-46d5-a94e-df01abc15e75": {
+      "ProjectGuid": "19483eac-f612-46d5-a94e-df01abc15e75",
+      "DisplayName": "GwpLayoutTouchAsar",
+      "ColorIndex": 0
+    }
+  },
+  "NextColorIndex": 1
 }
