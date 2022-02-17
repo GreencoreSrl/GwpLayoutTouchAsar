@@ -512,42 +512,260 @@ namespace GwpLayoutTouchAsar
             }
         }
 
+        //originale
+        //private static bool CreateP_REGPAR_file(List<string> data, List<int> casse, bool tipico)
+        //{
+        //    try
+        //    {             
+        //        if (casse != null)
+        //        {
+        //            fileTipico.Clear();
+        //            foreach (int value in casse)
+        //            {
+        //                Log.Information("cassa: " + value + " - tipico: " + tipico);
+        //                if (!tipico)
+        //                {                          
+        //                    string filename = "P_" + value.ToString().PadLeft(3, '0') + "PAR.DAT";
+        //                    string path = ConfigurationManager.AppSettings["Directory_Asar"].ToString() + "\\" + filename;
+        //                    if (File.Exists(path))
+        //                    {
+        //                         if (!CompareWithStandard(filename))
+        //                         {
+        //                            Log.Information("File Tipico is not equal to Standard so using it: " + filename);
+        //                            List<string> dataWorked = new List<string>(data);
+        //                            string[] pagine = dataWorked.ToArray();
+        //                            string[] content = File.ReadAllLines(ConfigurationManager.AppSettings["Directory_Asar"].ToString() + "\\" + filename);
 
+        //                            for (int indexP = 0; indexP < pagine.Length; indexP++)
+        //                            {
+        //                                for (int indexC = 0; indexC < content.Length; indexC++)
+        //                                {
+        //                                    if (content[indexC].StartsWith(pagine[indexP].Substring(0, 5)))
+        //                                    {
+        //                                        content[indexC] = pagine[indexP];
+        //                                        dataWorked.Remove(pagine[indexP]);
+        //                                    }
+        //                                }
+        //                            }
+
+        //                            List<string> fileNewContent = new List<string>(content.ToArray<string>());
+        //                            if (dataWorked.Count > 0)
+        //                            {
+        //                                fileNewContent.AddRange(dataWorked.AsEnumerable<string>());
+        //                            }
+
+        //                            fileNewContent.Sort();
+        //                            File.WriteAllLines((ConfigurationManager.AppSettings["Directory_Temporary"].ToString() + "\\" + filename), fileNewContent.ToArray());
+        //                            Log.Information("Saving " + filename + " file to directory: " + ConfigurationManager.AppSettings["Directory_Temporary"].ToString());
+        //                            fileTipico.Add(filename);
+        //                            fileTipico.Sort();
+        //                        }
+        //                        else //compare true
+        //                        {
+        //                            // Create canc_P_XXXPar.DAT into temporary directory
+        //                            FileOperations(ActonFile.Creating, (ConfigurationManager.AppSettings["Directory_Temporary"].ToString() + "\\" + "canc" + filename), string.Empty);
+        //                            Log.Information("Create canc_P_XXXPar.DAT into temporary directory: " + filename);
+
+        //                            // Delete tipico file from directory casse
+        //                            FileOperations(ActonFile.Deleting, (ConfigurationManager.AppSettings["Directory_Asar"].ToString() + "\\" + filename), string.Empty);
+        //                            Log.Information("File Tipico is equal to Standard so deleting it: " + filename);
+
+        //                            // Copy canc_P_XXXParDAT into backup directory
+        //                            FileOperations(ActonFile.Coping, (ConfigurationManager.AppSettings["Directory_Temporary"].ToString() + "\\" + "canc" + filename), nameBackupDirectory + "\\" + "canc" + filename);
+        //                            Log.Information("Coping canc_P_XXXPar.DAT into backup directory: " + filename);
+
+        //                            List<string> dataWorked = new List<string>(data);
+        //                            string[] pagine = dataWorked.ToArray();
+        //                            string[] content = File.ReadAllLines(ConfigurationManager.AppSettings["Directory_Asar"].ToString() + "\\" + P_REGPAR);
+
+        //                            for (int indexP = 0; indexP < pagine.Length; indexP++)
+        //                            {
+        //                                for (int indexC = 0; indexC < content.Length; indexC++)
+        //                                {
+        //                                    if (content[indexC].StartsWith(pagine[indexP].Substring(0, 5)))
+        //                                    {
+        //                                        content[indexC] = pagine[indexP];
+        //                                        dataWorked.Remove(pagine[indexP]);
+        //                                    }
+        //                                }
+        //                            }
+
+        //                            List<string> newContent = new List<string>(content.ToArray<string>());
+        //                            newContent.AddRange(dataWorked.AsEnumerable<string>());
+        //                            newContent.Sort();
+        //                            File.WriteAllLines((ConfigurationManager.AppSettings["Directory_Temporary"].ToString() + "\\" + P_REGPAR), newContent.ToArray());
+        //                            Log.Information("Saving P_REGPAR.DAT file to directory: " + ConfigurationManager.AppSettings["Directory_Temporary"].ToString());
+        //                        }
+        //                    }
+        //                    else { //file tipico non esiste
+        //                            List<string> dataWorked = new List<string>(data);
+        //                            string[] pagine = dataWorked.ToArray();
+        //                            string[] content = File.ReadAllLines(ConfigurationManager.AppSettings["Directory_Asar"].ToString() + "\\" + P_REGPAR);
+
+        //                            for (int indexP = 0; indexP < pagine.Length; indexP++)
+        //                            {
+        //                                for (int indexC = 0; indexC < content.Length; indexC++)
+        //                                {
+        //                                    if (content[indexC].StartsWith(pagine[indexP].Substring(0, 5)))
+        //                                    {
+        //                                        content[indexC] = pagine[indexP];
+        //                                        dataWorked.Remove(pagine[indexP]);
+        //                                    }
+        //                                }
+        //                            }
+
+        //                            List<string> newContent = new List<string>(content.ToArray<string>());
+        //                            newContent.AddRange(dataWorked.AsEnumerable<string>());
+        //                            newContent.Sort();
+        //                            File.WriteAllLines((ConfigurationManager.AppSettings["Directory_Temporary"].ToString() + "\\" + filename), newContent.ToArray());
+        //                            Log.Information("Saving " + filename +" file to directory: " + ConfigurationManager.AppSettings["Directory_Temporary"].ToString());
+
+        //                        //qui
+        //                            //se il file tipico non esiste non lo aggiungo
+        //                            fileTipico.Add(filename);
+        //                            fileTipico.Sort();
+        //                    }
+        //                }
+        //                else //tipico
+        //                {
+        //                    Log.Information("entro nell else . tipico vale true");
+        //                    string filename = "P_" + value.ToString().PadLeft(3, '0') + "PAR.DAT";
+        //                    if (File.Exists(ConfigurationManager.AppSettings["Directory_Asar"].ToString() + "\\" + filename))
+        //                    {
+        //                        List<string> dataWorked = new List<string>(data);
+        //                        string[] pagine = dataWorked.ToArray();
+        //                        string[] content = File.ReadAllLines(ConfigurationManager.AppSettings["Directory_Asar"].ToString() + "\\" + filename);
+
+        //                        for (int indexP = 0; indexP < pagine.Length; indexP++)
+        //                        {
+        //                            for (int indexC = 0; indexC < content.Length; indexC++)
+        //                            {
+        //                                if (content[indexC].StartsWith(pagine[indexP].Substring(0, 5)))
+        //                                {
+        //                                    content[indexC] = pagine[indexP];
+        //                                    dataWorked.Remove(pagine[indexP]);
+        //                                }
+        //                            }
+        //                        }
+
+        //                        List<string> fileNewContent = new List<string>(content.ToArray<string>());
+        //                        if (dataWorked.Count > 0)
+        //                        {
+        //                            fileNewContent.AddRange(dataWorked.AsEnumerable<string>());
+        //                        }
+
+        //                        fileNewContent.Sort();
+        //                        File.WriteAllLines((ConfigurationManager.AppSettings["Directory_Temporary"].ToString() + "\\" + filename), fileNewContent.ToArray());
+        //                        Log.Information("Saving " + filename + " file to directory: " + ConfigurationManager.AppSettings["Directory_Temporary"].ToString());
+        //                        fileTipico.Add(filename);
+        //                        fileTipico.Sort();
+        //                    }
+        //                    else
+        //                    {
+        //                        List<string> dataWorked = new List<string>(data);
+        //                        string[] pagine = dataWorked.ToArray();
+        //                        string[] content = File.ReadAllLines(ConfigurationManager.AppSettings["Directory_Asar"].ToString() + "\\" + P_REGPAR);
+
+        //                        for (int indexP = 0; indexP < pagine.Length; indexP++)
+        //                        {
+        //                            for (int indexC = 0; indexC < content.Length; indexC++)
+        //                            {
+        //                                if (content[indexC].StartsWith(pagine[indexP].Substring(0, 5)))
+        //                                {
+        //                                    content[indexC] = pagine[indexP];
+        //                                    dataWorked.Remove(pagine[indexP]);
+        //                                }
+        //                            }
+        //                        }
+
+        //                        List<string> newContent = new List<string>(content.ToArray<string>());
+        //                        newContent.AddRange(dataWorked.AsEnumerable<string>());
+        //                        newContent.Sort();
+        //                        File.WriteAllLines((ConfigurationManager.AppSettings["Directory_Temporary"].ToString() + "\\" + filename), newContent.ToArray());
+        //                        Log.Information("Saving " + filename + " file to directory: " + ConfigurationManager.AppSettings["Directory_Temporary"].ToString());
+        //                        fileTipico.Add(filename);
+        //                        fileTipico.Sort();
+        //                    }
+        //                }
+        //            }
+        //            return true;
+        //        }
+        //        else {
+        //                List<string> dataWorked = new List<string>(data);
+        //                string[] pagine = dataWorked.ToArray();
+        //                string[] content = File.ReadAllLines(ConfigurationManager.AppSettings["Directory_Asar"].ToString() + "\\" + P_REGPAR);                      
+
+        //                for (int indexP = 0; indexP < pagine.Length; indexP++)
+        //                {
+        //                    for (int indexC = 0; indexC < content.Length; indexC++)
+        //                    {
+        //                        if (content[indexC].StartsWith(pagine[indexP].Substring(0, 4)))
+        //                        {
+        //                            content[indexC] = pagine[indexP];
+        //                            dataWorked.Remove(pagine[indexP]);
+        //                        }
+        //                    }
+        //                }
+
+        //                List<string> newContent = new List<string>(content.ToArray<string>());
+        //                newContent.AddRange(dataWorked.AsEnumerable<string>());
+        //                newContent.Sort();
+        //                File.WriteAllLines((ConfigurationManager.AppSettings["Directory_Temporary"].ToString() + "\\" + P_REGPAR), newContent.ToArray());
+        //                return true;
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Log.Error("Exception occured: " + ex.InnerException);
+        //        return false;
+        //    }
+        //}
+
+        private static string[] aggiornaRighePar(List<string> data, string filename, List<string> dataWorked)
+        {
+            Log.Information("ENTRO in aggiornaRighePar : " + filename);
+         
+            string[] pagine = dataWorked.ToArray();
+            string[] content = File.ReadAllLines(ConfigurationManager.AppSettings["Directory_Asar"].ToString() + "\\" + filename);
+
+            for (int indexP = 0; indexP < pagine.Length; indexP++)
+            {
+                for (int indexC = 0; indexC < content.Length; indexC++)
+                {
+                    if (content[indexC].StartsWith(pagine[indexP].Substring(0, 5)))
+                    {
+                        Log.Information("inserisco : >" + pagine[indexP] + "<" + " - indexP : " + indexP);
+                        content[indexC] = pagine[indexP];
+                        dataWorked.Remove(pagine[indexP]);
+                    }
+                }
+            }
+            Log.Information("ESCO da aggiornaRighePar : ");
+            return content;
+        }
         private static bool CreateP_REGPAR_file(List<string> data, List<int> casse, bool tipico)
         {
             try
-            {             
+            {
                 if (casse != null)
                 {
                     fileTipico.Clear();
-                    foreach (int value in casse)
+                    foreach (int value in casse) 
                     {
                         Log.Information("cassa: " + value + " - tipico: " + tipico);
                         if (!tipico)
-                        {                          
+                        {
                             string filename = "P_" + value.ToString().PadLeft(3, '0') + "PAR.DAT";
                             string path = ConfigurationManager.AppSettings["Directory_Asar"].ToString() + "\\" + filename;
                             if (File.Exists(path))
                             {
-                                 if (!CompareWithStandard(filename))
-                                 {
+                                if (!CompareWithStandard(filename))
+                                {
                                     Log.Information("File Tipico is not equal to Standard so using it: " + filename);
+
                                     List<string> dataWorked = new List<string>(data);
-                                    string[] pagine = dataWorked.ToArray();
-                                    string[] content = File.ReadAllLines(ConfigurationManager.AppSettings["Directory_Asar"].ToString() + "\\" + filename);
-
-                                    for (int indexP = 0; indexP < pagine.Length; indexP++)
-                                    {
-                                        for (int indexC = 0; indexC < content.Length; indexC++)
-                                        {
-                                            if (content[indexC].StartsWith(pagine[indexP].Substring(0, 5)))
-                                            {
-                                                content[indexC] = pagine[indexP];
-                                                dataWorked.Remove(pagine[indexP]);
-                                            }
-                                        }
-                                    }
-
+                                    string[] content = aggiornaRighePar(data, filename, dataWorked);
+                                    
                                     List<string> fileNewContent = new List<string>(content.ToArray<string>());
                                     if (dataWorked.Count > 0)
                                     {
@@ -576,20 +794,9 @@ namespace GwpLayoutTouchAsar
 
                                     List<string> dataWorked = new List<string>(data);
                                     string[] pagine = dataWorked.ToArray();
-                                    string[] content = File.ReadAllLines(ConfigurationManager.AppSettings["Directory_Asar"].ToString() + "\\" + P_REGPAR);
 
-                                    for (int indexP = 0; indexP < pagine.Length; indexP++)
-                                    {
-                                        for (int indexC = 0; indexC < content.Length; indexC++)
-                                        {
-                                            if (content[indexC].StartsWith(pagine[indexP].Substring(0, 5)))
-                                            {
-                                                content[indexC] = pagine[indexP];
-                                                dataWorked.Remove(pagine[indexP]);
-                                            }
-                                        }
-                                    }
-
+                                    string[] content = aggiornaRighePar(data, P_REGPAR, dataWorked);
+                                   
                                     List<string> newContent = new List<string>(content.ToArray<string>());
                                     newContent.AddRange(dataWorked.AsEnumerable<string>());
                                     newContent.Sort();
@@ -597,32 +804,22 @@ namespace GwpLayoutTouchAsar
                                     Log.Information("Saving P_REGPAR.DAT file to directory: " + ConfigurationManager.AppSettings["Directory_Temporary"].ToString());
                                 }
                             }
-                            else { //file tipico non esiste
-                                    List<string> dataWorked = new List<string>(data);
-                                    string[] pagine = dataWorked.ToArray();
-                                    string[] content = File.ReadAllLines(ConfigurationManager.AppSettings["Directory_Asar"].ToString() + "\\" + P_REGPAR);
+                            else
+                            { //file tipico non esiste
+                                List<string> dataWorked = new List<string>(data);
 
-                                    for (int indexP = 0; indexP < pagine.Length; indexP++)
-                                    {
-                                        for (int indexC = 0; indexC < content.Length; indexC++)
-                                        {
-                                            if (content[indexC].StartsWith(pagine[indexP].Substring(0, 5)))
-                                            {
-                                                content[indexC] = pagine[indexP];
-                                                dataWorked.Remove(pagine[indexP]);
-                                            }
-                                        }
-                                    }
+                                string[] content = aggiornaRighePar(data, P_REGPAR, dataWorked);
 
-                                    List<string> newContent = new List<string>(content.ToArray<string>());
-                                    newContent.AddRange(dataWorked.AsEnumerable<string>());
-                                    newContent.Sort();
-                                    File.WriteAllLines((ConfigurationManager.AppSettings["Directory_Temporary"].ToString() + "\\" + filename), newContent.ToArray());
-                                    Log.Information("Saving " + filename +" file to directory: " + ConfigurationManager.AppSettings["Directory_Temporary"].ToString());
-                                    
-                                    //se il file tipico non esiste non lo aggiungo
-                                    //fileTipico.Add(filename);
-                                    //fileTipico.Sort();
+                                List<string> newContent = new List<string>(content.ToArray<string>());
+                                newContent.AddRange(dataWorked.AsEnumerable<string>());
+                                newContent.Sort();
+                                File.WriteAllLines((ConfigurationManager.AppSettings["Directory_Temporary"].ToString() + "\\" + filename), newContent.ToArray());
+                                Log.Information("Saving " + filename + " file to directory: " + ConfigurationManager.AppSettings["Directory_Temporary"].ToString());
+
+                                //qui
+                                //se il file tipico non esiste non lo aggiungo
+                                fileTipico.Add(filename);
+                                fileTipico.Sort();
                             }
                         }
                         else //tipico
@@ -632,20 +829,8 @@ namespace GwpLayoutTouchAsar
                             if (File.Exists(ConfigurationManager.AppSettings["Directory_Asar"].ToString() + "\\" + filename))
                             {
                                 List<string> dataWorked = new List<string>(data);
-                                string[] pagine = dataWorked.ToArray();
-                                string[] content = File.ReadAllLines(ConfigurationManager.AppSettings["Directory_Asar"].ToString() + "\\" + filename);
 
-                                for (int indexP = 0; indexP < pagine.Length; indexP++)
-                                {
-                                    for (int indexC = 0; indexC < content.Length; indexC++)
-                                    {
-                                        if (content[indexC].StartsWith(pagine[indexP].Substring(0, 5)))
-                                        {
-                                            content[indexC] = pagine[indexP];
-                                            dataWorked.Remove(pagine[indexP]);
-                                        }
-                                    }
-                                }
+                                string[] content = aggiornaRighePar(data, filename, dataWorked);
 
                                 List<string> fileNewContent = new List<string>(content.ToArray<string>());
                                 if (dataWorked.Count > 0)
@@ -662,20 +847,8 @@ namespace GwpLayoutTouchAsar
                             else
                             {
                                 List<string> dataWorked = new List<string>(data);
-                                string[] pagine = dataWorked.ToArray();
-                                string[] content = File.ReadAllLines(ConfigurationManager.AppSettings["Directory_Asar"].ToString() + "\\" + P_REGPAR);
 
-                                for (int indexP = 0; indexP < pagine.Length; indexP++)
-                                {
-                                    for (int indexC = 0; indexC < content.Length; indexC++)
-                                    {
-                                        if (content[indexC].StartsWith(pagine[indexP].Substring(0, 5)))
-                                        {
-                                            content[indexC] = pagine[indexP];
-                                            dataWorked.Remove(pagine[indexP]);
-                                        }
-                                    }
-                                }
+                                string[] content = aggiornaRighePar(data, P_REGPAR, dataWorked);
 
                                 List<string> newContent = new List<string>(content.ToArray<string>());
                                 newContent.AddRange(dataWorked.AsEnumerable<string>());
@@ -689,28 +862,17 @@ namespace GwpLayoutTouchAsar
                     }
                     return true;
                 }
-                else {
-                        List<string> dataWorked = new List<string>(data);
-                        string[] pagine = dataWorked.ToArray();
-                        string[] content = File.ReadAllLines(ConfigurationManager.AppSettings["Directory_Asar"].ToString() + "\\" + P_REGPAR);                      
+                else
+                {
+                    List<string> dataWorked = new List<string>(data);
+                    
+                    string[] content = aggiornaRighePar(data, P_REGPAR, dataWorked);
 
-                        for (int indexP = 0; indexP < pagine.Length; indexP++)
-                        {
-                            for (int indexC = 0; indexC < content.Length; indexC++)
-                            {
-                                if (content[indexC].StartsWith(pagine[indexP].Substring(0, 4)))
-                                {
-                                    content[indexC] = pagine[indexP];
-                                    dataWorked.Remove(pagine[indexP]);
-                                }
-                            }
-                        }
-
-                        List<string> newContent = new List<string>(content.ToArray<string>());
-                        newContent.AddRange(dataWorked.AsEnumerable<string>());
-                        newContent.Sort();
-                        File.WriteAllLines((ConfigurationManager.AppSettings["Directory_Temporary"].ToString() + "\\" + P_REGPAR), newContent.ToArray());
-                        return true;
+                    List<string> newContent = new List<string>(content.ToArray<string>());
+                    newContent.AddRange(dataWorked.AsEnumerable<string>());
+                    newContent.Sort();
+                    File.WriteAllLines((ConfigurationManager.AppSettings["Directory_Temporary"].ToString() + "\\" + P_REGPAR), newContent.ToArray());
+                    return true;
                 }
             }
             catch (Exception ex)
@@ -719,7 +881,6 @@ namespace GwpLayoutTouchAsar
                 return false;
             }
         }
-
 
         private static Boolean CompareWithStandard(string filename)
         {
