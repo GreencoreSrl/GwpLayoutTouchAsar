@@ -27,7 +27,6 @@ C:\progetti\VisualStudio\GwpLayoutTouchAsar\bin\Release\Newtonsoft.Json.xml
 C:\progetti\VisualStudio\GwpLayoutTouchAsar\bin\Release\Serilog.xml
 C:\progetti\VisualStudio\GwpLayoutTouchAsar\bin\Release\Serilog.Sinks.File.pdb
 C:\progetti\VisualStudio\GwpLayoutTouchAsar\bin\Release\Serilog.Sinks.File.xml
-C:\progetti\VisualStudio\GwpLayoutTouchAsar\obj\Release\GwpLayoutTouchAsar.csproj.AssemblyReference.cache
 C:\progetti\VisualStudio\GwpLayoutTouchAsar\obj\Release\GwpLayoutTouchAsar.csproj.SuggestedBindingRedirects.cache
 C:\progetti\VisualStudio\GwpLayoutTouchAsar\obj\Release\GwpLayoutTouchAsar.ProjectInstaller.resources
 C:\progetti\VisualStudio\GwpLayoutTouchAsar\obj\Release\GwpLayoutTouchAsar.csproj.GenerateResource.cache

@@ -77,7 +77,7 @@ namespace GwpLayoutTouchAsar
             .WriteTo.File(ConfigurationManager.AppSettings["Directory_Log"].ToString(), rollingInterval: RollingInterval.Day)
             .CreateLogger();
 
-            Log.Information("Starting GwpLayoutTouchAsar Service ver 1.0.0.2-P-3129");
+            Log.Information("Starting GwpLayoutTouchAsar Service ver 1.0.0.3-P-3129");
 
             watcher = new FileSystemWatcher(ConfigurationManager.AppSettings["Directory_Incoming"].ToString(), "*.json");
             watcher.NotifyFilter = NotifyFilters.FileName
@@ -240,7 +240,11 @@ namespace GwpLayoutTouchAsar
                                 {
                                     numeroPulsante++;
                                     data = pg.Codice.ToString().PadLeft(4, '0') + ":" + (numeroPulsante).ToString().PadLeft(4, ' ') + ":" + pl.Valore.PadLeft(16, ' ') + ":0000:" + pl.Descrizione.PadRight(20, ' ');
-                                    S_PluRefData.Add(data);
+                                    if (!S_PluRefData.Contains(data))
+                                    {
+                                        S_PluRefData.Add(data);
+                                    }
+                                    
                                 }
                             }
                         }
@@ -382,8 +386,10 @@ namespace GwpLayoutTouchAsar
                                 {
                                     Log.Information("Copied current " + filename + " into old directory");
                                     FileOperations(ActonFile.Coping, (ConfigurationManager.AppSettings["Directory_Casse"].ToString() + "\\" + filename), (ConfigurationManager.AppSettings["Directory_Casse"].ToString() + "\\old\\" + filename));
+                                    
                                     Log.Information("Copied current " + filename + " into backup directory");
                                     FileOperations(ActonFile.Coping, (ConfigurationManager.AppSettings["Directory_Temporary"].ToString() + "\\" + filename), nameBackupDirectory + "\\" + filename);
+                                    
                                     Log.Information("Copied new " + filename + " into casse directory");
                                     FileOperations(ActonFile.Coping, (ConfigurationManager.AppSettings["Directory_Temporary"].ToString() + "\\" + filename), (ConfigurationManager.AppSettings["Directory_Casse"].ToString() + "\\" + filename));
 
@@ -401,8 +407,10 @@ namespace GwpLayoutTouchAsar
                             {
                                 Log.Information("Copied current file P_REGPAR.DAT into old directory");
                                 FileOperations(ActonFile.Coping, (ConfigurationManager.AppSettings["Directory_Casse"].ToString() + "\\" + P_REGPAR), (ConfigurationManager.AppSettings["Directory_Casse"].ToString() + "\\old\\" + P_REGPAR));
+
                                 Log.Information("Copied current file P_REGPAR.DAT into backup directory");
                                 FileOperations(ActonFile.Coping, (ConfigurationManager.AppSettings["Directory_Temporary"].ToString() + "\\" + P_REGPAR), nameBackupDirectory + "\\" + P_REGPAR);
+
                                 Log.Information("Copied new P_REGPAR.DAT into casse directory");
                                 FileOperations(ActonFile.Coping, (ConfigurationManager.AppSettings["Directory_Temporary"].ToString() + "\\" + P_REGPAR), (ConfigurationManager.AppSettings["Directory_Casse"].ToString() + "\\" + P_REGPAR));
 
@@ -813,13 +821,14 @@ namespace GwpLayoutTouchAsar
                                 List<string> newContent = new List<string>(content.ToArray<string>());
                                 newContent.AddRange(dataWorked.AsEnumerable<string>());
                                 newContent.Sort();
-                                File.WriteAllLines((ConfigurationManager.AppSettings["Directory_Temporary"].ToString() + "\\" + filename), newContent.ToArray());
+                                //File.WriteAllLines((ConfigurationManager.AppSettings["Directory_Temporary"].ToString() + "\\" + filename), newContent.ToArray());
+                                File.WriteAllLines((ConfigurationManager.AppSettings["Directory_Temporary"].ToString() + "\\" + P_REGPAR), newContent.ToArray());
                                 Log.Information("Saving " + filename + " file to directory: " + ConfigurationManager.AppSettings["Directory_Temporary"].ToString());
 
                                 //qui
                                 //se il file tipico non esiste non lo aggiungo
-                                fileTipico.Add(filename);
-                                fileTipico.Sort();
+                                //fileTipico.Add(filename);
+                                //fileTipico.Sort();
                             }
                         }
                         else //tipico

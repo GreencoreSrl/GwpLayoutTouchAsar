@@ -52,3 +52,4 @@ C:\progetti\VisualStudio\GwpLayoutTouchAsar\bin\Debug\Serilog.xml
 C:\progetti\VisualStudio\GwpLayoutTouchAsar\bin\Debug\Serilog.Sinks.File.pdb
 C:\progetti\VisualStudio\GwpLayoutTouchAsar\bin\Debug\Serilog.Sinks.File.xml
 C:\progetti\VisualStudio\GwpLayoutTouchAsar\obj\Debug\GwpLayoutTouchAsar.csproj.CopyComplete
+C:\progetti\VisualStudio\GwpLayoutTouchAsar\obj\Debug\GwpLayoutTouchAsar.csproj.AssemblyReference.cache
