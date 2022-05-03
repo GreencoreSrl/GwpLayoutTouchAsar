@@ -77,7 +77,7 @@ namespace GwpLayoutTouchAsar
             .WriteTo.File(ConfigurationManager.AppSettings["Directory_Log"].ToString(), rollingInterval: RollingInterval.Day)
             .CreateLogger();
 
-            Log.Information("Starting GwpLayoutTouchAsar Service ver 1.0.0.3-P-3129");
+            Log.Information("Starting GwpLayoutTouchAsar Service ver 1.0.0.6-P-3129");
 
             watcher = new FileSystemWatcher(ConfigurationManager.AppSettings["Directory_Incoming"].ToString(), "*.json");
             watcher.NotifyFilter = NotifyFilters.FileName
@@ -97,7 +97,7 @@ namespace GwpLayoutTouchAsar
 
             if (e.Name.Equals(ConfigurationManager.AppSettings["FilenameJson"].ToString()))
             {
-                Log.Information("Keyboard.Json file founded in the directory");
+                Log.Information("**** Keyboard.Json file found ****\r\n");
 
                 Log.Information("Coping new file into Processing directory");
                 FileOperations(ActonFile.Coping, e.FullPath, (ConfigurationManager.AppSettings["Directory_Processing"].ToString() + "\\" + e.Name));
@@ -189,7 +189,7 @@ namespace GwpLayoutTouchAsar
                 Log.Information("Creating Backup directory " + nameBackupDirectory);
                 Directory.CreateDirectory(nameBackupDirectory);
 
-                Log.Information("Processing Json file starting...");
+                Log.Information("*** Processing Json file begin ***");
 
                 int numeroPulsante = 0;
                 string pulsante = "";
@@ -289,7 +289,7 @@ namespace GwpLayoutTouchAsar
                         recordInError++;
                     }
 
-                    Log.Information("Processing Tastiere list...");
+                    Log.Information("Processing Tastiere list...\r\n");
 
                     numeroPulsante = 0;
                     pulsante = "";
@@ -479,7 +479,7 @@ namespace GwpLayoutTouchAsar
             }
             catch (Exception ex)
             {
-                Log.Error("Exception occured: " + ex.InnerException);
+                Log.Error("Exception occured 1 : " + ex.Message);
                 string newDirectory = (ConfigurationManager.AppSettings["Directory_Error"].ToString() + "\\" + DateTime.Now.ToString("ddMMyyyyHHmm"));
                 Directory.CreateDirectory(ConfigurationManager.AppSettings["Directory_Error"].ToString() + "\\" + newDirectory);
                 Directory.EnumerateFiles(ConfigurationManager.AppSettings["Directory_Temporary"].ToString(), "*.Dat").ToList().ForEach(x => File.Copy(x, (newDirectory + "\\" + x)));
@@ -514,6 +514,7 @@ namespace GwpLayoutTouchAsar
             }
             catch (Exception ex)
             {
+                Log.Error("ImgChecked exception occured: " + ex.Message);
                 Log.Error("ImgChecked exception occured: " + ex.StackTrace);
                 imageStream = null;
                 return false;
@@ -732,25 +733,132 @@ namespace GwpLayoutTouchAsar
         private static string[] aggiornaRighePar(List<string> data, string filename, List<string> dataWorked)
         {
             Log.Information("ENTRO in aggiornaRighePar : " + filename);
-         
-            string[] pagine = dataWorked.ToArray();
-            string[] content = File.ReadAllLines(ConfigurationManager.AppSettings["Directory_Asar"].ToString() + "\\" + filename);
 
-            for (int indexP = 0; indexP < pagine.Length; indexP++)
+            string[] righeNuove = dataWorked.ToArray();
+            string[] righeP_regpar = File.ReadAllLines(ConfigurationManager.AppSettings["Directory_Asar"].ToString() + "\\" + filename);
+
+            //pulisco il p_regpar, tolgo le righe "PD0", e "PRES"
+            for (int indexP = 0; indexP < righeP_regpar.Length; indexP++)
             {
-                for (int indexC = 0; indexC < content.Length; indexC++)
+                if (righeP_regpar[indexP].StartsWith("PD0") || righeP_regpar[indexP].StartsWith("PRES")){
+                    Log.Information("elimino : >" + righeP_regpar[indexP] + "<" + " - indexP : " + indexP);
+                    righeP_regpar[indexP] = "";
+                }
+            }
+
+/*
+            foreach (string rigaNuova in dataWorked)
+            {
+                if (rigaNuova.Substring(0, 4).Equals("DYKY") || rigaNuova.Substring(0, 4).Equals("DYTX"))
                 {
-                    if (content[indexC].StartsWith(pagine[indexP].Substring(0, 5)))
+                    //cerco la riga nel P_REGPAR per sostituirla
+                    for (int j = 0; j < righeP_regpar.Length; j++)
                     {
-                        Log.Information("inserisco : >" + pagine[indexP] + "<" + " - indexP : " + indexP);
-                        content[indexC] = pagine[indexP];
-                        dataWorked.Remove(pagine[indexP]);
+                        if (righeP_regpar[j].StartsWith(rigaNuova.Substring(0, 5)))
+                        {
+                            Log.Information("sostituisco : >" + righeP_regpar[j] + "<");
+                            Log.Information("        con : >" + rigaNuova + "<");
+                            righeP_regpar[j] = rigaNuova;
+                            dataWorked.Remove(rigaNuova);
+                        }
                     }
                 }
             }
+*/
+
+            //inserisco le righe "DYKY" e "DYTX"
+            
+            for (int i=0; i<righeNuove.Length; i++)
+            {
+                if (righeNuove[i].Substring(0,4).Equals("DYKY") || righeNuove[i].Substring(0, 4).Equals("DYTX")){
+                    //cerco la riga nel P_REGPAR per sostituirla
+
+                for (int j=0; j<righeP_regpar.Length; j++)
+                    {
+                        if (righeP_regpar[j].StartsWith(righeNuove[i].Substring(0, 5)))
+                        {
+                            Log.Information("sostituisco : >" + righeP_regpar[j] + "<");
+                            Log.Information("        con : >" + righeNuove[i] + "<");
+                            righeP_regpar[j] = righeNuove[i];
+                        }
+                    }
+                }
+            }
+            
+            //metto il p_regpar in una lista
+            List<string> lista_pregpar = new List<string>();
+            for (int i = 0; i < righeP_regpar.Length; i++)
+            {
+                if (righeP_regpar[i].Length == 46)
+                {
+                    Log.Information("inserisco in lista : >" + righeP_regpar[i] + "<" + " - i : " + i + " - len: " + righeP_regpar[i].Length);
+                    lista_pregpar.Add(righeP_regpar[i]);
+                }
+            }
+
+
+
+            //aggiungo i nuovi elementi
+            for (int indexP = 0; indexP < righeNuove.Length; indexP++)
+            {
+                if ( (righeNuove[indexP].StartsWith("DYKY") || righeNuove[indexP].StartsWith("DYKY")) ) 
+                { 
+                    Log.Information("aggiungo i nuovi elementi : >" + righeNuove[indexP] + "<");
+                    lista_pregpar.Add(righeNuove[indexP]);
+                }
+            }
+
+            lista_pregpar.Sort();
+
+            
+            string[] p_regpar_finale;
+
+            p_regpar_finale = lista_pregpar.ToArray();
+
             Log.Information("ESCO da aggiornaRighePar : ");
-            return content;
+            return p_regpar_finale;
         }
+/*
+        private static string[] aggiornaRighePar(List<string> data, string filename, List<string> dataWorked)
+        {
+            Log.Information("ENTRO in aggiornaRighePar : " + filename);
+         
+            string[] righeNuove = dataWorked.ToArray();
+            string[] righeP_regpar = File.ReadAllLines(ConfigurationManager.AppSettings["Directory_Asar"].ToString() + "\\" + filename);
+
+            for (int indexP = 0; indexP < righeNuove.Length; indexP++)
+            {
+                for (int indexC = 0; indexC < righeP_regpar.Length; indexC++)
+                {
+                    if (righeP_regpar[indexC].StartsWith(righeNuove[indexP].Substring(0, 5)))
+                    {
+                        Log.Information("inserisco : >" + righeNuove[indexP] + "<" + " - indexP : " + indexP);
+                        righeP_regpar[indexC] = righeNuove[indexP];
+                        dataWorked.Remove(righeNuove[indexP]);
+                    }else if( righeP_regpar[indexC].StartsWith("PD0") || righeP_regpar[indexC].StartsWith("PRES"))
+                    {
+                        Log.Information("elimino : >" + righeP_regpar[indexC] + "<" + " - indexP : " + indexP);
+                        righeP_regpar[indexC] = "";
+                    }
+                }
+            }
+
+            List<string> righeP_regpar_finale = new List<string>();
+            string[] p_regpar_finale;
+            for (int i=0; i< righeP_regpar.Length; i++)
+            {
+                if (righeP_regpar[i].Length > 40)
+                {
+                    righeP_regpar_finale.Add (righeP_regpar[i]);
+                    
+                }
+            }
+
+            p_regpar_finale = righeP_regpar_finale.ToArray();
+            Log.Information("ESCO da aggiornaRighePar : ");
+            return p_regpar_finale;
+        }
+        */
         private static bool CreateP_REGPAR_file(List<string> data, List<int> casse, bool tipico)
         {
             try
@@ -819,7 +927,7 @@ namespace GwpLayoutTouchAsar
                                 string[] content = aggiornaRighePar(data, P_REGPAR, dataWorked);
 
                                 List<string> newContent = new List<string>(content.ToArray<string>());
-                                newContent.AddRange(dataWorked.AsEnumerable<string>());
+                                //newContent.AddRange(dataWorked.AsEnumerable<string>());
                                 newContent.Sort();
                                 //File.WriteAllLines((ConfigurationManager.AppSettings["Directory_Temporary"].ToString() + "\\" + filename), newContent.ToArray());
                                 File.WriteAllLines((ConfigurationManager.AppSettings["Directory_Temporary"].ToString() + "\\" + P_REGPAR), newContent.ToArray());
@@ -886,7 +994,7 @@ namespace GwpLayoutTouchAsar
             }
             catch (Exception ex)
             {
-                Log.Error("Exception occured: " + ex.InnerException);
+                Log.Error("Exception occured 2 : " + ex.Message);
                 return false;
             }
         }
@@ -970,7 +1078,7 @@ namespace GwpLayoutTouchAsar
             }
             catch (Exception ex)
             {
-                Log.Error("Exception occured: " + ex.InnerException);
+                Log.Error("Exception occured 3 : " + ex.Message);
                 return false;
             }         
         }
@@ -1004,7 +1112,7 @@ namespace GwpLayoutTouchAsar
             }
             catch (Exception ex)
             {
-                Log.Error("Exception occured: " + ex.InnerException);
+                Log.Error("Exception occured 4: " + ex.Message);
                 return false;
             }
 

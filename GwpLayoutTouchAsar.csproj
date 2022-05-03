@@ -52,6 +52,7 @@
       <HintPath>packages\System.Drawing.Common.5.0.2\lib\net461\System.Drawing.Common.dll</HintPath>
     </Reference>
     <Reference Include="System.Management" />
+    <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />

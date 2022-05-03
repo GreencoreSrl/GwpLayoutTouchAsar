@@ -40,7 +40,7 @@
             // 
             // serviceInstaller1
             // 
-            this.serviceInstaller1.Description = "GwpLayoutTouchAsar Service: Versione 1.0.0.3";
+            this.serviceInstaller1.Description = "GwpLayoutTouchAsar Service: Versione 1.0.0.6";
             this.serviceInstaller1.DisplayName = "GwpLayoutTouchAsar  Service";
             this.serviceInstaller1.ServiceName = "GwpLayoutTouchAsar";
             this.serviceInstaller1.StartType = System.ServiceProcess.ServiceStartMode.Automatic;

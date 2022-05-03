@@ -23,15 +23,17 @@ goto comando
 
 
 :comando
-del c:\server\casse\*.dat
-del c:\server\casse\lan\*.dat
-del c:\server\casse\lan\old\*.dat
-del c:\server\casse\old\*.dat
+rem del c:\server\casse\*.dat
+rem del c:\server\casse\lan\*.dat
+rem del c:\server\casse\lan\old\*.dat
+rem del c:\server\casse\old\*.dat
 
 call StopService.bat
+call UninstallService.bat
 echo copy %PERCORSO%GwpLayoutTouchAsar.exe C:\ServiziGWP\GwpLayoutTouchAsar\
 copy %PERCORSO%GwpLayoutTouchAsar.exe C:\ServiziGWP\GwpLayoutTouchAsar\
 pause
+call InstallService.bat
 call StartService.bat
 
 goto inizio

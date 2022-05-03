@@ -34,3 +34,4 @@ C:\progetti\VisualStudio\GwpLayoutTouchAsar\obj\Release\GwpLayoutTouchAsar.cspro
 C:\progetti\VisualStudio\GwpLayoutTouchAsar\obj\Release\GwpLayoutTouchAsar.csproj.CopyComplete
 C:\progetti\VisualStudio\GwpLayoutTouchAsar\obj\Release\GwpLayoutTouchAsar.exe
 C:\progetti\VisualStudio\GwpLayoutTouchAsar\obj\Release\GwpLayoutTouchAsar.pdb
+C:\progetti\VisualStudio\GwpLayoutTouchAsar\obj\Release\GwpLayoutTouchAsar.csproj.AssemblyReference.cache
