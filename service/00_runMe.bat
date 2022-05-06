@@ -23,10 +23,10 @@ goto comando
 
 
 :comando
-rem del c:\server\casse\*.dat
-rem del c:\server\casse\lan\*.dat
-rem del c:\server\casse\lan\old\*.dat
-rem del c:\server\casse\old\*.dat
+del c:\server\casse\*.dat
+del c:\server\casse\lan\*.dat
+del c:\server\casse\lan\old\*.dat
+del c:\server\casse\old\*.dat
 
 call StopService.bat
 call UninstallService.bat

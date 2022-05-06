@@ -42,6 +42,13 @@ namespace GwpLayoutTouchAsar
         private const string Dictionary = "Dictionary.bin";
         private static string nameBackupDirectory = "";
 
+        private const string KEY_DYKY = "DYKY";
+        private const string KEY_DYTX = "DYTX";
+        private const string KEY_PD0 = "PD0";
+        private const string KEY_PRES = "PRES";
+        private const string KEY_VER = "VER0";
+
+
         public GwpLayoutTouchAsar()
         {
             InitializeComponent();
@@ -72,12 +79,29 @@ namespace GwpLayoutTouchAsar
 
         static void worker()
         {
+            
             Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Verbose()
             .WriteTo.File(ConfigurationManager.AppSettings["Directory_Log"].ToString(), rollingInterval: RollingInterval.Day)
-            .CreateLogger();
+            .CreateLogger();                     
+            
+            Log.Information("\r\n");
+            Log.Information("\r\n");
+            Log.Information("\r\n");
+            Log.Information("************************************************************");
+            Log.Information("** Starting GwpLayoutTouchAsar Service ver 1.0.0.7-P-3129 **");
+            Log.Information("************************************************************");
 
-            Log.Information("Starting GwpLayoutTouchAsar Service ver 1.0.0.6-P-3129");
+            string fileJasonDaElaborare = ConfigurationManager.AppSettings["FilenameJson"].ToString();
+            string fullPath = ConfigurationManager.AppSettings["Directory_Incoming"].ToString() + "\\";
+            Log.Information("controllo presenza di " + fullPath + fileJasonDaElaborare);
+            if (File.Exists(fullPath + fileJasonDaElaborare))
+            {
+                Log.Information("file esiste procedo");
+                inizioElaborazione(fullPath+ fileJasonDaElaborare, fileJasonDaElaborare);
+            }
+            else
+                Log.Information("cartella vuota, delego al Watcher");
 
             watcher = new FileSystemWatcher(ConfigurationManager.AppSettings["Directory_Incoming"].ToString(), "*.json");
             watcher.NotifyFilter = NotifyFilters.FileName
@@ -97,9 +121,12 @@ namespace GwpLayoutTouchAsar
 
             if (e.Name.Equals(ConfigurationManager.AppSettings["FilenameJson"].ToString()))
             {
+                inizioElaborazione(e.FullPath, e.Name);
+                /*
                 Log.Information("**** Keyboard.Json file found ****\r\n");
 
                 Log.Information("Coping new file into Processing directory");
+                Log.Information("e.FullPath: " + e.FullPath + " - e.Name : " + e.Name);
                 FileOperations(ActonFile.Coping, e.FullPath, (ConfigurationManager.AppSettings["Directory_Processing"].ToString() + "\\" + e.Name));
 
                 Log.Information("Reading Json file");
@@ -126,9 +153,44 @@ namespace GwpLayoutTouchAsar
                     Directory.CreateDirectory(ConfigurationManager.AppSettings["Directory_Error"].ToString() + "\\" + newDirectory);
                     FileOperations(ActonFile.Moving, e.FullPath, (newDirectory + "\\" + e.Name));
                 }
+                */
+                
             }
         }
 
+        private static void inizioElaborazione(string fullPath, string fileName)
+        {
+            Log.Information("**** Keyboard.Json file found ****\r\n");
+
+            Log.Information("Coping new file into Processing directory");
+            FileOperations(ActonFile.Coping, fullPath, (ConfigurationManager.AppSettings["Directory_Processing"].ToString() + "\\" + fileName));
+
+            Log.Information("Reading Json file");
+            var json = File.ReadAllText(fullPath);
+
+            try
+            {
+                Log.Information("Validation Json file...");
+                Keyboard JsonObj = JsonConvert.DeserializeObject<Keyboard>(json);
+                Log.Information("Json validation OK");
+
+                ProcessingJSON(JsonObj);
+
+                Log.Information("Cleaning directory");
+                CleanUP();
+            }
+            catch (Exception ex)
+            {
+                // TODO LOG
+                Log.Error("Json validation KO");
+                Log.Error("Exception occurred : " + ex.Message);
+                UpdateStatus(string.Empty, string.Empty, 0, 0, 0);
+                string newDirectory = (ConfigurationManager.AppSettings["Directory_Error"].ToString() + "\\" + DateTime.Now.ToString("ddMMyyyyHHmm"));
+                Directory.CreateDirectory(ConfigurationManager.AppSettings["Directory_Error"].ToString() + "\\" + newDirectory);
+                FileOperations(ActonFile.Moving, fullPath, (newDirectory + "\\" + fileName));
+            }
+
+        }
 
         private static void CleanUP()
         {
@@ -228,10 +290,14 @@ namespace GwpLayoutTouchAsar
 
                 foreach (Layout lt in keyboards.Layouts)
                 {
+                    Log.Information("\r\n");
+                    Log.Information("PROCESSO Layout: " + lt.CodiceLayout);
+                    P_RegParData = new List<string>();
                     try
                     {
-                        foreach (Pagine pg in lt.Pagine)
+                        foreach (Pagine pg in lt.Pagine)                        
                         {
+                            Log.Information("PROCESSO Pagina: " + pg.Codice);
                             numeroPulsante = 0;
                             string data = "";
                             foreach (Pulsante pl in pg.Pulsante)
@@ -732,7 +798,7 @@ namespace GwpLayoutTouchAsar
 
         private static string[] aggiornaRighePar(List<string> data, string filename, List<string> dataWorked)
         {
-            Log.Information("ENTRO in aggiornaRighePar : " + filename);
+            Log.Information("ENTRO in aggiornaRighePar : " + filename + " dataWorked.len: " + dataWorked.Count);
 
             string[] righeNuove = dataWorked.ToArray();
             string[] righeP_regpar = File.ReadAllLines(ConfigurationManager.AppSettings["Directory_Asar"].ToString() + "\\" + filename);
@@ -740,45 +806,29 @@ namespace GwpLayoutTouchAsar
             //pulisco il p_regpar, tolgo le righe "PD0", e "PRES"
             for (int indexP = 0; indexP < righeP_regpar.Length; indexP++)
             {
-                if (righeP_regpar[indexP].StartsWith("PD0") || righeP_regpar[indexP].StartsWith("PRES")){
+                if (righeP_regpar[indexP].StartsWith(KEY_PD0)  || 
+                    righeP_regpar[indexP].StartsWith(KEY_PRES) ||
+                    righeP_regpar[indexP].StartsWith(KEY_VER))
+                {
                     Log.Information("elimino : >" + righeP_regpar[indexP] + "<" + " - indexP : " + indexP);
                     righeP_regpar[indexP] = "";
                 }
             }
 
-/*
-            foreach (string rigaNuova in dataWorked)
-            {
-                if (rigaNuova.Substring(0, 4).Equals("DYKY") || rigaNuova.Substring(0, 4).Equals("DYTX"))
-                {
-                    //cerco la riga nel P_REGPAR per sostituirla
-                    for (int j = 0; j < righeP_regpar.Length; j++)
-                    {
-                        if (righeP_regpar[j].StartsWith(rigaNuova.Substring(0, 5)))
-                        {
-                            Log.Information("sostituisco : >" + righeP_regpar[j] + "<");
-                            Log.Information("        con : >" + rigaNuova + "<");
-                            righeP_regpar[j] = rigaNuova;
-                            dataWorked.Remove(rigaNuova);
-                        }
-                    }
-                }
-            }
-*/
-
             //inserisco le righe "DYKY" e "DYTX"
             
             for (int i=0; i<righeNuove.Length; i++)
             {
-                if (righeNuove[i].Substring(0,4).Equals("DYKY") || righeNuove[i].Substring(0, 4).Equals("DYTX")){
+                if (righeNuove[i].StartsWith(KEY_DYKY)  || 
+                    righeNuove[i].StartsWith(KEY_DYTX))    {
                     //cerco la riga nel P_REGPAR per sostituirla
 
                 for (int j=0; j<righeP_regpar.Length; j++)
                     {
                         if (righeP_regpar[j].StartsWith(righeNuove[i].Substring(0, 5)))
                         {
-                            Log.Information("sostituisco : >" + righeP_regpar[j] + "<");
-                            Log.Information("        con : >" + righeNuove[i] + "<");
+                            Log.Debug("sostituisco : >" + righeP_regpar[j] + "<");
+                            Log.Debug("        con : >" + righeNuove[i] + "<");
                             righeP_regpar[j] = righeNuove[i];
                         }
                     }
@@ -791,17 +841,15 @@ namespace GwpLayoutTouchAsar
             {
                 if (righeP_regpar[i].Length == 46)
                 {
-                    Log.Information("inserisco in lista : >" + righeP_regpar[i] + "<" + " - i : " + i + " - len: " + righeP_regpar[i].Length);
+                    //Log.Information("inserisco in lista : >" + righeP_regpar[i] + "<" + " - i : " + i + " - len: " + righeP_regpar[i].Length);
                     lista_pregpar.Add(righeP_regpar[i]);
                 }
             }
 
-
-
             //aggiungo i nuovi elementi
             for (int indexP = 0; indexP < righeNuove.Length; indexP++)
-            {
-                if ( (righeNuove[indexP].StartsWith("DYKY") || righeNuove[indexP].StartsWith("DYKY")) ) 
+            {                
+                if ( !(righeNuove[indexP].StartsWith(KEY_DYKY) || righeNuove[indexP].StartsWith(KEY_DYTX)) ) 
                 { 
                     Log.Information("aggiungo i nuovi elementi : >" + righeNuove[indexP] + "<");
                     lista_pregpar.Add(righeNuove[indexP]);
@@ -809,8 +857,7 @@ namespace GwpLayoutTouchAsar
             }
 
             lista_pregpar.Sort();
-
-            
+          
             string[] p_regpar_finale;
 
             p_regpar_finale = lista_pregpar.ToArray();
@@ -861,6 +908,8 @@ namespace GwpLayoutTouchAsar
         */
         private static bool CreateP_REGPAR_file(List<string> data, List<int> casse, bool tipico)
         {
+            Log.Information("\r\n");
+            Log.Information("ENTRO IN  CreateP_REGPAR_file - data.len: " + data.Count);
             try
             {
                 if (casse != null)
@@ -868,6 +917,7 @@ namespace GwpLayoutTouchAsar
                     fileTipico.Clear();
                     foreach (int value in casse) 
                     {
+                        Log.Information("\r\n");
                         Log.Information("cassa: " + value + " - tipico: " + tipico);
                         if (!tipico)
                         {
@@ -883,10 +933,10 @@ namespace GwpLayoutTouchAsar
                                     string[] content = aggiornaRighePar(data, filename, dataWorked);
                                     
                                     List<string> fileNewContent = new List<string>(content.ToArray<string>());
-                                    if (dataWorked.Count > 0)
-                                    {
-                                        fileNewContent.AddRange(dataWorked.AsEnumerable<string>());
-                                    }
+                                    //if (dataWorked.Count > 0)
+                                    //{
+                                    //    fileNewContent.AddRange(dataWorked.AsEnumerable<string>());
+                                    //}
 
                                     fileNewContent.Sort();
                                     File.WriteAllLines((ConfigurationManager.AppSettings["Directory_Temporary"].ToString() + "\\" + filename), fileNewContent.ToArray());
@@ -914,7 +964,7 @@ namespace GwpLayoutTouchAsar
                                     string[] content = aggiornaRighePar(data, P_REGPAR, dataWorked);
                                    
                                     List<string> newContent = new List<string>(content.ToArray<string>());
-                                    newContent.AddRange(dataWorked.AsEnumerable<string>());
+                                    //newContent.AddRange(dataWorked.AsEnumerable<string>());
                                     newContent.Sort();
                                     File.WriteAllLines((ConfigurationManager.AppSettings["Directory_Temporary"].ToString() + "\\" + P_REGPAR), newContent.ToArray());
                                     Log.Information("Saving P_REGPAR.DAT file to directory: " + ConfigurationManager.AppSettings["Directory_Temporary"].ToString());
@@ -950,10 +1000,10 @@ namespace GwpLayoutTouchAsar
                                 string[] content = aggiornaRighePar(data, filename, dataWorked);
 
                                 List<string> fileNewContent = new List<string>(content.ToArray<string>());
-                                if (dataWorked.Count > 0)
-                                {
-                                    fileNewContent.AddRange(dataWorked.AsEnumerable<string>());
-                                }
+                                //if (dataWorked.Count > 0)
+                                //{
+                                //    fileNewContent.AddRange(dataWorked.AsEnumerable<string>());
+                                //}
 
                                 fileNewContent.Sort();
                                 File.WriteAllLines((ConfigurationManager.AppSettings["Directory_Temporary"].ToString() + "\\" + filename), fileNewContent.ToArray());
@@ -968,7 +1018,7 @@ namespace GwpLayoutTouchAsar
                                 string[] content = aggiornaRighePar(data, P_REGPAR, dataWorked);
 
                                 List<string> newContent = new List<string>(content.ToArray<string>());
-                                newContent.AddRange(dataWorked.AsEnumerable<string>());
+                                //newContent.AddRange(dataWorked.AsEnumerable<string>());
                                 newContent.Sort();
                                 File.WriteAllLines((ConfigurationManager.AppSettings["Directory_Temporary"].ToString() + "\\" + filename), newContent.ToArray());
                                 Log.Information("Saving " + filename + " file to directory: " + ConfigurationManager.AppSettings["Directory_Temporary"].ToString());
@@ -977,6 +1027,7 @@ namespace GwpLayoutTouchAsar
                             }
                         }
                     }
+                    Log.Information("ESCO DA CreateP_REGPAR_file 1 - true");
                     return true;
                 }
                 else
@@ -986,51 +1037,72 @@ namespace GwpLayoutTouchAsar
                     string[] content = aggiornaRighePar(data, P_REGPAR, dataWorked);
 
                     List<string> newContent = new List<string>(content.ToArray<string>());
-                    newContent.AddRange(dataWorked.AsEnumerable<string>());
+                    //newContent.AddRange(dataWorked.AsEnumerable<string>());
                     newContent.Sort();
                     File.WriteAllLines((ConfigurationManager.AppSettings["Directory_Temporary"].ToString() + "\\" + P_REGPAR), newContent.ToArray());
+                    Log.Information("ESCO DA CreateP_REGPAR_file 2 - true");
                     return true;
                 }
             }
             catch (Exception ex)
             {
                 Log.Error("Exception occured 2 : " + ex.Message);
+                Log.Information("ESCO DA CreateP_REGPAR_file 1 - false");
                 return false;
             }
         }
 
         private static Boolean CompareWithStandard(string filename)
         {
-            Log.Information("ENTRO in CompareWithStandard");
+            Log.Information("ENTRO in CompareWithStandard. filename: " + filename);
             Boolean flag = false;
             // Make a list copy...
             List<string> regParData = File.ReadAllLines(ConfigurationManager.AppSettings["Directory_Asar"].ToString() + "\\" + filename).ToList<string>();
             List<string> workedData = regParData.ToList<string>();
+            List<string> pregParData_sotto_server = File.ReadAllLines(ConfigurationManager.AppSettings["Directory_Asar"].ToString() + "\\" + P_REGPAR).ToList<string>();
+            List<string> workedPregParData_sotto_server = pregParData_sotto_server.ToList<string>();
 
             // Delete the extra row from tipico file...
-            foreach(string data in workedData)
+
+            Log.Information(filename);
+            foreach (string data in workedData)
             {
-                if (data.StartsWith("DYKY3"))
+                if (data.StartsWith(KEY_DYKY + "3") ||
+                    data.StartsWith(KEY_DYTX + "3") ||
+                    data.StartsWith(KEY_PRES) ||
+                    data.StartsWith(KEY_PD0) ||
+                    data.StartsWith(KEY_VER))
                 {
+                    Log.Information(data + "rimosso");
                     regParData.Remove(data);
                 }
-                else if (data.StartsWith("PRES"))
+                else
                 {
-                    regParData.Remove(data);
-                }
-                else if (data.StartsWith("PD"))
-                {
-                    regParData.Remove(data);
-                }
-                else if (data.StartsWith("VER"))
-                {
-                    regParData.Remove(data);
+                    //Log.Debug(data);
                 }
             }
 
-            Log.Information("ESCO Da CompareWithStandard");
+            Log.Information("P_REGPAR SOTTO SERVER");
+            foreach (string data in workedPregParData_sotto_server)
+            {
+                if (data.StartsWith(KEY_DYKY + "3") ||
+                    data.StartsWith(KEY_DYTX + "3") ||
+                    data.StartsWith(KEY_PRES) ||
+                    data.StartsWith(KEY_PD0) ||
+                    data.StartsWith(KEY_VER))
+                {
+                    Log.Information(data + "rimosso");
+                    pregParData_sotto_server.Remove(data);
+                }
+                else
+                {
+                    //Log.Debug(data);
+                }
+            }
+
             // Compared tipico file with standard file...
-            flag = regParData.SequenceEqual(File.ReadAllLines(ConfigurationManager.AppSettings["Directory_Asar"].ToString() + "\\" + P_REGPAR));
+            //flag = regParData.SequenceEqual(File.ReadAllLines(ConfigurationManager.AppSettings["Directory_Asar"].ToString() + "\\" + P_REGPAR));
+            flag = regParData.SequenceEqual(pregParData_sotto_server);
             Log.Information("ESCO Da CompareWithStandard. flag: " + flag);
             return flag;
         }
