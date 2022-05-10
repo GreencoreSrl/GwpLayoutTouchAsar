@@ -42,6 +42,18 @@ namespace GwpLayoutTouchAsar
         private const string Dictionary = "Dictionary.bin";
         private static string nameBackupDirectory = "";
 
+        private static string DIRECTORY_CASSE = ConfigurationManager.AppSettings["Directory_Casse"].ToString();
+        private static string DIRECTORY_CASSELAN = ConfigurationManager.AppSettings["Directory_CasseLan"].ToString();
+        private static string DIRECTORY_ASAR = ConfigurationManager.AppSettings["Directory_Asar"].ToString();
+        private static string DIRECTORY_INCOMING = ConfigurationManager.AppSettings["Directory_Incoming"].ToString();
+        private static string DIRECTORY_PROCESSING = ConfigurationManager.AppSettings["Directory_Processing"].ToString();
+        private static string DIRECTORY_TEMPORARY = ConfigurationManager.AppSettings["Directory_Temporary"].ToString();
+        private static string DIRECTORY_ERROR = ConfigurationManager.AppSettings["Directory_Error"].ToString();
+        private static string DIRECTORY_BACKUP = ConfigurationManager.AppSettings["Directory_Backup"].ToString();
+        private static string DIRECTORY_LOG = ConfigurationManager.AppSettings["Directory_Log"].ToString();
+        private static string DIRECTORY_IMAGE = ConfigurationManager.AppSettings["Directory_Image"].ToString();
+        private static string DIRECTORY_OLD = ConfigurationManager.AppSettings["Directory_Old"].ToString();
+
         private const string KEY_DYKY = "DYKY";
         private const string KEY_DYTX = "DYTX";
         private const string KEY_PD0 = "PD0";
@@ -82,18 +94,18 @@ namespace GwpLayoutTouchAsar
             
             Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Verbose()
-            .WriteTo.File(ConfigurationManager.AppSettings["Directory_Log"].ToString(), rollingInterval: RollingInterval.Day)
+            .WriteTo.File(DIRECTORY_LOG, rollingInterval: RollingInterval.Day)
             .CreateLogger();                     
             
             Log.Information("\r\n");
             Log.Information("\r\n");
             Log.Information("\r\n");
             Log.Information("************************************************************");
-            Log.Information("** Starting GwpLayoutTouchAsar Service ver 1.0.0.7-P-3129 **");
+            Log.Information("** Starting GwpLayoutTouchAsar Service ver 1.0.0.8-P-3129 **");
             Log.Information("************************************************************");
 
             string fileJasonDaElaborare = ConfigurationManager.AppSettings["FilenameJson"].ToString();
-            string fullPath = ConfigurationManager.AppSettings["Directory_Incoming"].ToString() + "\\";
+            string fullPath = DIRECTORY_INCOMING+ "\\";
             Log.Information("controllo presenza di " + fullPath + fileJasonDaElaborare);
             if (File.Exists(fullPath + fileJasonDaElaborare))
             {
@@ -103,7 +115,7 @@ namespace GwpLayoutTouchAsar
             else
                 Log.Information("cartella vuota, delego al Watcher");
 
-            watcher = new FileSystemWatcher(ConfigurationManager.AppSettings["Directory_Incoming"].ToString(), "*.json");
+            watcher = new FileSystemWatcher(DIRECTORY_INCOMING, "*.json");
             watcher.NotifyFilter = NotifyFilters.FileName
                                  | NotifyFilters.CreationTime
                                  | NotifyFilters.LastWrite
@@ -127,7 +139,7 @@ namespace GwpLayoutTouchAsar
 
                 Log.Information("Coping new file into Processing directory");
                 Log.Information("e.FullPath: " + e.FullPath + " - e.Name : " + e.Name);
-                FileOperations(ActonFile.Coping, e.FullPath, (ConfigurationManager.AppSettings["Directory_Processing"].ToString() + "\\" + e.Name));
+                FileOperations(ActonFile.Coping, e.FullPath, (DIRECTORY_PROCESSING+ "\\" + e.Name));
 
                 Log.Information("Reading Json file");
                 var json = File.ReadAllText(e.FullPath);             
@@ -149,8 +161,8 @@ namespace GwpLayoutTouchAsar
                     Log.Error("Json validation KO");
                     Log.Error("Exception occurred : " + ex.Message);
                     UpdateStatus(string.Empty, string.Empty,  0, 0, 0);
-                    string newDirectory = (ConfigurationManager.AppSettings["Directory_Error"].ToString() + "\\" + DateTime.Now.ToString("ddMMyyyyHHmm"));
-                    Directory.CreateDirectory(ConfigurationManager.AppSettings["Directory_Error"].ToString() + "\\" + newDirectory);
+                    string newDirectory = (DIRECTORY_ERROR+ "\\" + DateTime.Now.ToString("ddMMyyyyHHmm"));
+                    Directory.CreateDirectory(DIRECTORY_ERROR+ "\\" + newDirectory);
                     FileOperations(ActonFile.Moving, e.FullPath, (newDirectory + "\\" + e.Name));
                 }
                 */
@@ -163,7 +175,7 @@ namespace GwpLayoutTouchAsar
             Log.Information("**** Keyboard.Json file found ****\r\n");
 
             Log.Information("Coping new file into Processing directory");
-            FileOperations(ActonFile.Coping, fullPath, (ConfigurationManager.AppSettings["Directory_Processing"].ToString() + "\\" + fileName));
+            FileOperations(ActonFile.Coping, fullPath, (DIRECTORY_PROCESSING+ "\\" + fileName));
 
             Log.Information("Reading Json file");
             var json = File.ReadAllText(fullPath);
@@ -185,8 +197,8 @@ namespace GwpLayoutTouchAsar
                 Log.Error("Json validation KO");
                 Log.Error("Exception occurred : " + ex.Message);
                 UpdateStatus(string.Empty, string.Empty, 0, 0, 0);
-                string newDirectory = (ConfigurationManager.AppSettings["Directory_Error"].ToString() + "\\" + DateTime.Now.ToString("ddMMyyyyHHmm"));
-                Directory.CreateDirectory(ConfigurationManager.AppSettings["Directory_Error"].ToString() + "\\" + newDirectory);
+                string newDirectory = (DIRECTORY_ERROR+ "\\" + DateTime.Now.ToString("ddMMyyyyHHmm"));
+                Directory.CreateDirectory(DIRECTORY_ERROR+ "\\" + newDirectory);
                 FileOperations(ActonFile.Moving, fullPath, (newDirectory + "\\" + fileName));
             }
 
@@ -196,11 +208,11 @@ namespace GwpLayoutTouchAsar
         {
             Log.Information("Cleaning directory...");
             Log.Information("Cleaning Incoming directory");
-            FileOperations(ActonFile.Deleting, (ConfigurationManager.AppSettings["Directory_Incoming"].ToString() + "\\" + ConfigurationManager.AppSettings["FilenameJson"].ToString()), string.Empty);
+            FileOperations(ActonFile.Deleting, (DIRECTORY_INCOMING+ "\\" + ConfigurationManager.AppSettings["FilenameJson"].ToString()), string.Empty);
             Log.Information("Cleaning Processing directory");
-            FileOperations(ActonFile.Deleting, (ConfigurationManager.AppSettings["Directory_Processing"].ToString() + "\\" + ConfigurationManager.AppSettings["FilenameJson"].ToString()), string.Empty);
+            FileOperations(ActonFile.Deleting, (DIRECTORY_PROCESSING+ "\\" + ConfigurationManager.AppSettings["FilenameJson"].ToString()), string.Empty);
             Log.Information("Cleaning Temporary directory");
-            Directory.EnumerateFiles(ConfigurationManager.AppSettings["Directory_Temporary"].ToString(), "*.Dat").ToList().ForEach(x => File.Delete(x));
+            Directory.EnumerateFiles(DIRECTORY_TEMPORARY, "*.Dat").ToList().ForEach(x => File.Delete(x));            
         }
 
 
@@ -247,7 +259,7 @@ namespace GwpLayoutTouchAsar
             try
             {
                 int recordInError = 0;
-                nameBackupDirectory = ConfigurationManager.AppSettings["Directory_Backup"].ToString() + "\\" + keyboards.NomeFlusso + DateTime.Now.ToString("ddMMyyyyHHmm");
+                nameBackupDirectory = DIRECTORY_BACKUP+ "\\" + keyboards.NomeFlusso + DateTime.Now.ToString("ddMMyyyyHHmm");
                 Log.Information("Creating Backup directory " + nameBackupDirectory);
                 Directory.CreateDirectory(nameBackupDirectory);
 
@@ -268,7 +280,7 @@ namespace GwpLayoutTouchAsar
                         MemoryStream data = null;
                         if (imgChecked(img, out data))
                         {
-                            using (FileStream file = new FileStream(ConfigurationManager.AppSettings["Directory_Image"].ToString() + "\\" + img.Nome, FileMode.Create, FileAccess.Write))
+                            using (FileStream file = new FileStream(DIRECTORY_IMAGE+ "\\" + img.Nome, FileMode.Create, FileAccess.Write))
                             {
                                 data.WriteTo(file);
                             }
@@ -276,7 +288,7 @@ namespace GwpLayoutTouchAsar
                         else
                         {
                             Log.Information("Coping default image into Image directory");
-                            FileOperations(ActonFile.Coping, ConfigurationManager.AppSettings["Image_Default"].ToString(), ConfigurationManager.AppSettings["Directory_Image"].ToString());
+                            FileOperations(ActonFile.Coping, ConfigurationManager.AppSettings["Image_Default"].ToString(), DIRECTORY_IMAGE);
                         }
                     }
                 }
@@ -318,34 +330,31 @@ namespace GwpLayoutTouchAsar
                         if (CreateS_PLUREF_file(S_PluRefData, keyboards.PulisciTutto))
                         {
                             Log.Information("Created directory old");
-                            Directory.CreateDirectory(ConfigurationManager.AppSettings["Directory_Casse"].ToString() + "\\" + "old");                            
+                            Directory.CreateDirectory(DIRECTORY_OLD);                            
                             Log.Information("Copied current file S_PLUREF.DAT into old directory...");
-                            FileOperations(ActonFile.Coping, (ConfigurationManager.AppSettings["Directory_Casse"].ToString() + "\\" + S_PLUREF), (ConfigurationManager.AppSettings["Directory_Casse"].ToString() + "\\old\\" + S_PLUREF));
+                            FileOperations(ActonFile.Coping, (DIRECTORY_CASSE + "\\" + S_PLUREF), (DIRECTORY_OLD + "\\" + S_PLUREF));
                             Log.Information("Copied new file S_PLUREF.dat into backup directory...");
-                            FileOperations(ActonFile.Coping, (ConfigurationManager.AppSettings["Directory_Temporary"].ToString() + "\\" + S_PLUREF), nameBackupDirectory + "\\" + S_PLUREF);
+                            FileOperations(ActonFile.Coping, (DIRECTORY_TEMPORARY+ "\\" + S_PLUREF), nameBackupDirectory + "\\" + S_PLUREF);
                             Log.Information("Copied new file S_PLUREF.dat into casse directory...");
-                            FileOperations(ActonFile.Coping, (ConfigurationManager.AppSettings["Directory_Temporary"].ToString() + "\\" + S_PLUREF), (ConfigurationManager.AppSettings["Directory_Casse"].ToString() + "\\" +  S_PLUREF));
+                            FileOperations(ActonFile.Coping, (DIRECTORY_TEMPORARY+ "\\" + S_PLUREF), (DIRECTORY_CASSE + "\\" +  S_PLUREF));
                             
                             //DMA-P-3129#A BEG
-                            Log.Information("Created directory old (casseLan)");
-                            Directory.CreateDirectory(ConfigurationManager.AppSettings["Directory_CasseLan"].ToString() + "\\" + "old");
-
                             Log.Information("Copied current file S_PLUREF.DAT into old directory (casseLan)...");                            
-                            FileOperations(ActonFile.Coping, (ConfigurationManager.AppSettings["Directory_CasseLan"].ToString() + "\\" + S_PLUREF), (ConfigurationManager.AppSettings["Directory_CasseLan"].ToString() + "\\old\\" + S_PLUREF));
+                            FileOperations(ActonFile.Coping, (DIRECTORY_CASSELAN+ "\\" + S_PLUREF), (DIRECTORY_OLD + "\\" + S_PLUREF));
 
                             Log.Information("Copied new file S_PLUREF.dat into casse directory...");
-                            FileOperations(ActonFile.Coping, (ConfigurationManager.AppSettings["Directory_Temporary"].ToString() + "\\" + S_PLUREF), (ConfigurationManager.AppSettings["Directory_CasseLan"].ToString() + "\\" + S_PLUREF));
+                            FileOperations(ActonFile.Coping, (DIRECTORY_TEMPORARY+ "\\" + S_PLUREF), (DIRECTORY_CASSELAN+ "\\" + S_PLUREF));
                             //DMA-P-3129#A END
                         }
                         else
                         {
                             Log.Information("S_PLUREF.DAT file creation failed");
-                            string newDirectory = (ConfigurationManager.AppSettings["Directory_Error"].ToString() + "\\" + DateTime.Now.ToString("ddMMyyyyHHmm"));
+                            string newDirectory = (DIRECTORY_ERROR+ "\\" + DateTime.Now.ToString("ddMMyyyyHHmm"));
                             Log.Information("Directory creation " + newDirectory);
-                            Directory.CreateDirectory(ConfigurationManager.AppSettings["Directory_Error"].ToString() + "\\" + newDirectory);
+                            Directory.CreateDirectory(DIRECTORY_ERROR+ "\\" + newDirectory);
                             Log.Information("Cancelled files");
-                            FileOperations(ActonFile.Coping, (ConfigurationManager.AppSettings["Directory_Processing"].ToString() + "\\" + ConfigurationManager.AppSettings["FilenameJson"].ToString()), (newDirectory + "\\" + ConfigurationManager.AppSettings["FilenameJson"].ToString()));
-                            Directory.EnumerateFiles(ConfigurationManager.AppSettings["Directory_Temporary"].ToString(), "*.Dat").ToList().ForEach(x => File.Delete(x));
+                            FileOperations(ActonFile.Coping, (DIRECTORY_PROCESSING+ "\\" + ConfigurationManager.AppSettings["FilenameJson"].ToString()), (newDirectory + "\\" + ConfigurationManager.AppSettings["FilenameJson"].ToString()));
+                            Directory.EnumerateFiles(DIRECTORY_TEMPORARY, "*.Dat").ToList().ForEach(x => File.Delete(x));
                             return;
                         }
                     }
@@ -441,61 +450,65 @@ namespace GwpLayoutTouchAsar
                         if (CreateP_REGPAR_file(P_RegParData, (lt.Casse != null ? lt.Casse.ToList<int>() : null), lt.Tipo))
                         {
                             Log.Information("Created directory old");
-                            Directory.CreateDirectory(ConfigurationManager.AppSettings["Directory_Casse"].ToString() + "\\" + "old");
-
-                            Log.Information("Created directory old (casseLan)");
-                            Directory.CreateDirectory(ConfigurationManager.AppSettings["Directory_CasseLan"].ToString() + "\\" + "old");
+                            Directory.CreateDirectory(DIRECTORY_OLD);
 
                             if (fileTipico.Count > 0)
                             {
                                 foreach (string filename in fileTipico)
                                 {
                                     Log.Information("Copied current " + filename + " into old directory");
-                                    FileOperations(ActonFile.Coping, (ConfigurationManager.AppSettings["Directory_Casse"].ToString() + "\\" + filename), (ConfigurationManager.AppSettings["Directory_Casse"].ToString() + "\\old\\" + filename));
+                                    FileOperations(ActonFile.Coping, (DIRECTORY_CASSE + "\\" + filename), (DIRECTORY_OLD + "\\" + filename));
                                     
                                     Log.Information("Copied current " + filename + " into backup directory");
-                                    FileOperations(ActonFile.Coping, (ConfigurationManager.AppSettings["Directory_Temporary"].ToString() + "\\" + filename), nameBackupDirectory + "\\" + filename);
+                                    FileOperations(ActonFile.Coping, (DIRECTORY_TEMPORARY+ "\\" + filename), nameBackupDirectory + "\\" + filename);
                                     
                                     Log.Information("Copied new " + filename + " into casse directory");
-                                    FileOperations(ActonFile.Coping, (ConfigurationManager.AppSettings["Directory_Temporary"].ToString() + "\\" + filename), (ConfigurationManager.AppSettings["Directory_Casse"].ToString() + "\\" + filename));
+                                    FileOperations(ActonFile.Coping, (DIRECTORY_TEMPORARY+ "\\" + filename), (DIRECTORY_CASSE + "\\" + filename));
 
                                     //DMA-P-3129#A BEG
                                     Log.Information("Copied current " + filename + " into old directory (casseLan)");
-                                    FileOperations(ActonFile.Coping, (ConfigurationManager.AppSettings["Directory_CasseLan"].ToString() + "\\" + filename), (ConfigurationManager.AppSettings["Directory_CasseLan"].ToString() + "\\old\\" + filename));
+                                    FileOperations(ActonFile.Coping, (DIRECTORY_CASSELAN+ "\\" + filename), (DIRECTORY_OLD + "\\" + filename));
 
                                     Log.Information("Copied new " + filename + " into casse directory (casseLan)");
-                                    FileOperations(ActonFile.Coping, (ConfigurationManager.AppSettings["Directory_Temporary"].ToString() + "\\" + filename), (ConfigurationManager.AppSettings["Directory_CasseLan"].ToString() + "\\" + filename));
+                                    FileOperations(ActonFile.Coping, (DIRECTORY_TEMPORARY+ "\\" + filename), (DIRECTORY_CASSELAN+ "\\" + filename));
                                     //DMA-P-3129#A END
                                 }
 
                             }
-                            else
+                            //else
+                            //{
+                            try
                             {
+                                Log.Information("Dopo i file tipici, copio il P_REGPAR");
                                 Log.Information("Copied current file P_REGPAR.DAT into old directory");
-                                FileOperations(ActonFile.Coping, (ConfigurationManager.AppSettings["Directory_Casse"].ToString() + "\\" + P_REGPAR), (ConfigurationManager.AppSettings["Directory_Casse"].ToString() + "\\old\\" + P_REGPAR));
+                                FileOperations(ActonFile.Coping, (DIRECTORY_CASSE + "\\" + P_REGPAR), (DIRECTORY_OLD + "\\" + P_REGPAR));
 
                                 Log.Information("Copied current file P_REGPAR.DAT into backup directory");
-                                FileOperations(ActonFile.Coping, (ConfigurationManager.AppSettings["Directory_Temporary"].ToString() + "\\" + P_REGPAR), nameBackupDirectory + "\\" + P_REGPAR);
+                                FileOperations(ActonFile.Coping, (DIRECTORY_TEMPORARY + "\\" + P_REGPAR), nameBackupDirectory + "\\" + P_REGPAR);
 
                                 Log.Information("Copied new P_REGPAR.DAT into casse directory");
-                                FileOperations(ActonFile.Coping, (ConfigurationManager.AppSettings["Directory_Temporary"].ToString() + "\\" + P_REGPAR), (ConfigurationManager.AppSettings["Directory_Casse"].ToString() + "\\" + P_REGPAR));
+                                FileOperations(ActonFile.Coping, (DIRECTORY_TEMPORARY + "\\" + P_REGPAR), (DIRECTORY_CASSE + "\\" + P_REGPAR));
 
                                 //DMA-P-3129#A BEG
                                 Log.Information("Copied current file P_REGPAR.DAT into old directory (casseLan)");
-                                FileOperations(ActonFile.Coping, (ConfigurationManager.AppSettings["Directory_CasseLan"].ToString() + "\\" + P_REGPAR), (ConfigurationManager.AppSettings["Directory_CasseLan"].ToString() + "\\old\\" + P_REGPAR));
+                                FileOperations(ActonFile.Coping, (DIRECTORY_CASSELAN + "\\" + P_REGPAR), (DIRECTORY_OLD + "\\" + P_REGPAR));
 
                                 Log.Information("Copied new P_REGPAR.DAT into casse directory (casseLan)");
-                                FileOperations(ActonFile.Coping, (ConfigurationManager.AppSettings["Directory_Temporary"].ToString() + "\\" + P_REGPAR), (ConfigurationManager.AppSettings["Directory_CasseLan"].ToString() + "\\" + P_REGPAR));
+                                FileOperations(ActonFile.Coping, (DIRECTORY_TEMPORARY + "\\" + P_REGPAR), (DIRECTORY_CASSELAN + "\\" + P_REGPAR));
                                 //DMA-P-3129#A END
-
                             }
+                            catch (Exception e)
+                            {
+                                Log.Information("errore nella copia del P_REGPAR e:" + e.Message);
+                            }
+                            //}
 
 
                             if (fileTipico.Count > 0)
                             {
-                                if (File.Exists(ConfigurationManager.AppSettings["Directory_Casse"].ToString() + "\\" + Dictionary))
+                                if (File.Exists(DIRECTORY_CASSE+ "\\" + Dictionary))
                                 {
-                                    flussoCasse = Read((ConfigurationManager.AppSettings["Directory_Casse"].ToString() + "\\" + Dictionary));
+                                    flussoCasse = Read((DIRECTORY_CASSE + "\\" + Dictionary));
                                 }
 
                                 foreach (string fileTp in fileTipico)
@@ -517,18 +530,18 @@ namespace GwpLayoutTouchAsar
                                     }
                                 }
 
-                                Write(flussoCasse, (ConfigurationManager.AppSettings["Directory_Casse"].ToString() + "\\" + Dictionary));                               
+                                Write(flussoCasse, (DIRECTORY_CASSE + "\\" + Dictionary));                               
                             }                          
                         }
                         else
                         {
                             Log.Information("P_REGPAR.DAT file creation failed");
-                            string newDirectory = (ConfigurationManager.AppSettings["Directory_Error"].ToString() + "\\" + DateTime.Now.ToString("ddMMyyyyHHmm"));
+                            string newDirectory = (DIRECTORY_ERROR + "\\" + DateTime.Now.ToString("ddMMyyyyHHmm"));
                             Log.Information("Directory creation " + newDirectory);
-                            Directory.CreateDirectory(ConfigurationManager.AppSettings["Directory_Error"].ToString() + "\\" + newDirectory);
+                            Directory.CreateDirectory(DIRECTORY_ERROR + "\\" + newDirectory);
                             Log.Information("Cancelled files");
-                            FileOperations(ActonFile.Coping, (ConfigurationManager.AppSettings["Directory_Processing"].ToString() + "\\" + ConfigurationManager.AppSettings["FilenameJson"].ToString()), (newDirectory + "\\" + ConfigurationManager.AppSettings["FilenameJson"].ToString()));
-                            Directory.EnumerateFiles(ConfigurationManager.AppSettings["Directory_Temporary"].ToString(), "*.Dat").ToList().ForEach(x => File.Delete(x));
+                            FileOperations(ActonFile.Coping, (DIRECTORY_PROCESSING + "\\" + ConfigurationManager.AppSettings["FilenameJson"].ToString()), (newDirectory + "\\" + ConfigurationManager.AppSettings["FilenameJson"].ToString()));
+                            Directory.EnumerateFiles(DIRECTORY_TEMPORARY, "*.Dat").ToList().ForEach(x => File.Delete(x));
                             return;
                         }
                     }
@@ -546,10 +559,10 @@ namespace GwpLayoutTouchAsar
             catch (Exception ex)
             {
                 Log.Error("Exception occured 1 : " + ex.Message);
-                string newDirectory = (ConfigurationManager.AppSettings["Directory_Error"].ToString() + "\\" + DateTime.Now.ToString("ddMMyyyyHHmm"));
-                Directory.CreateDirectory(ConfigurationManager.AppSettings["Directory_Error"].ToString() + "\\" + newDirectory);
-                Directory.EnumerateFiles(ConfigurationManager.AppSettings["Directory_Temporary"].ToString(), "*.Dat").ToList().ForEach(x => File.Copy(x, (newDirectory + "\\" + x)));
-                Directory.EnumerateFiles(ConfigurationManager.AppSettings["Directory_Temporary"].ToString(), "*.Dat").ToList().ForEach(x => File.Delete(x));
+                string newDirectory = (DIRECTORY_ERROR+ "\\" + DateTime.Now.ToString("ddMMyyyyHHmm"));
+                Directory.CreateDirectory(DIRECTORY_ERROR+ "\\" + newDirectory);
+                Directory.EnumerateFiles(DIRECTORY_TEMPORARY, "*.Dat").ToList().ForEach(x => File.Copy(x, (newDirectory + "\\" + x)));
+                Directory.EnumerateFiles(DIRECTORY_TEMPORARY, "*.Dat").ToList().ForEach(x => File.Delete(x));
             }
         }
 
@@ -601,7 +614,7 @@ namespace GwpLayoutTouchAsar
         //                if (!tipico)
         //                {                          
         //                    string filename = "P_" + value.ToString().PadLeft(3, '0') + "PAR.DAT";
-        //                    string path = ConfigurationManager.AppSettings["Directory_Asar"].ToString() + "\\" + filename;
+        //                    string path = DIRECTORY_ASAR+ "\\" + filename;
         //                    if (File.Exists(path))
         //                    {
         //                         if (!CompareWithStandard(filename))
@@ -609,7 +622,7 @@ namespace GwpLayoutTouchAsar
         //                            Log.Information("File Tipico is not equal to Standard so using it: " + filename);
         //                            List<string> dataWorked = new List<string>(data);
         //                            string[] pagine = dataWorked.ToArray();
-        //                            string[] content = File.ReadAllLines(ConfigurationManager.AppSettings["Directory_Asar"].ToString() + "\\" + filename);
+        //                            string[] content = File.ReadAllLines(DIRECTORY_ASAR+ "\\" + filename);
 
         //                            for (int indexP = 0; indexP < pagine.Length; indexP++)
         //                            {
@@ -630,7 +643,7 @@ namespace GwpLayoutTouchAsar
         //                            }
 
         //                            fileNewContent.Sort();
-        //                            File.WriteAllLines((ConfigurationManager.AppSettings["Directory_Temporary"].ToString() + "\\" + filename), fileNewContent.ToArray());
+        //                            File.WriteAllLines((DIRECTORY_TEMPORARY+ "\\" + filename), fileNewContent.ToArray());
         //                            Log.Information("Saving " + filename + " file to directory: " + ConfigurationManager.AppSettings["Directory_Temporary"].ToString());
         //                            fileTipico.Add(filename);
         //                            fileTipico.Sort();
@@ -638,20 +651,20 @@ namespace GwpLayoutTouchAsar
         //                        else //compare true
         //                        {
         //                            // Create canc_P_XXXPar.DAT into temporary directory
-        //                            FileOperations(ActonFile.Creating, (ConfigurationManager.AppSettings["Directory_Temporary"].ToString() + "\\" + "canc" + filename), string.Empty);
+        //                            FileOperations(ActonFile.Creating, (DIRECTORY_TEMPORARY+ "\\" + "canc" + filename), string.Empty);
         //                            Log.Information("Create canc_P_XXXPar.DAT into temporary directory: " + filename);
 
         //                            // Delete tipico file from directory casse
-        //                            FileOperations(ActonFile.Deleting, (ConfigurationManager.AppSettings["Directory_Asar"].ToString() + "\\" + filename), string.Empty);
+        //                            FileOperations(ActonFile.Deleting, (DIRECTORY_ASAR+ "\\" + filename), string.Empty);
         //                            Log.Information("File Tipico is equal to Standard so deleting it: " + filename);
 
         //                            // Copy canc_P_XXXParDAT into backup directory
-        //                            FileOperations(ActonFile.Coping, (ConfigurationManager.AppSettings["Directory_Temporary"].ToString() + "\\" + "canc" + filename), nameBackupDirectory + "\\" + "canc" + filename);
+        //                            FileOperations(ActonFile.Coping, (DIRECTORY_TEMPORARY+ "\\" + "canc" + filename), nameBackupDirectory + "\\" + "canc" + filename);
         //                            Log.Information("Coping canc_P_XXXPar.DAT into backup directory: " + filename);
 
         //                            List<string> dataWorked = new List<string>(data);
         //                            string[] pagine = dataWorked.ToArray();
-        //                            string[] content = File.ReadAllLines(ConfigurationManager.AppSettings["Directory_Asar"].ToString() + "\\" + P_REGPAR);
+        //                            string[] content = File.ReadAllLines(DIRECTORY_ASAR+ "\\" + P_REGPAR);
 
         //                            for (int indexP = 0; indexP < pagine.Length; indexP++)
         //                            {
@@ -668,14 +681,14 @@ namespace GwpLayoutTouchAsar
         //                            List<string> newContent = new List<string>(content.ToArray<string>());
         //                            newContent.AddRange(dataWorked.AsEnumerable<string>());
         //                            newContent.Sort();
-        //                            File.WriteAllLines((ConfigurationManager.AppSettings["Directory_Temporary"].ToString() + "\\" + P_REGPAR), newContent.ToArray());
+        //                            File.WriteAllLines((DIRECTORY_TEMPORARY+ "\\" + P_REGPAR), newContent.ToArray());
         //                            Log.Information("Saving P_REGPAR.DAT file to directory: " + ConfigurationManager.AppSettings["Directory_Temporary"].ToString());
         //                        }
         //                    }
         //                    else { //file tipico non esiste
         //                            List<string> dataWorked = new List<string>(data);
         //                            string[] pagine = dataWorked.ToArray();
-        //                            string[] content = File.ReadAllLines(ConfigurationManager.AppSettings["Directory_Asar"].ToString() + "\\" + P_REGPAR);
+        //                            string[] content = File.ReadAllLines(DIRECTORY_ASAR+ "\\" + P_REGPAR);
 
         //                            for (int indexP = 0; indexP < pagine.Length; indexP++)
         //                            {
@@ -692,7 +705,7 @@ namespace GwpLayoutTouchAsar
         //                            List<string> newContent = new List<string>(content.ToArray<string>());
         //                            newContent.AddRange(dataWorked.AsEnumerable<string>());
         //                            newContent.Sort();
-        //                            File.WriteAllLines((ConfigurationManager.AppSettings["Directory_Temporary"].ToString() + "\\" + filename), newContent.ToArray());
+        //                            File.WriteAllLines((DIRECTORY_TEMPORARY+ "\\" + filename), newContent.ToArray());
         //                            Log.Information("Saving " + filename +" file to directory: " + ConfigurationManager.AppSettings["Directory_Temporary"].ToString());
 
         //                        //qui
@@ -705,11 +718,11 @@ namespace GwpLayoutTouchAsar
         //                {
         //                    Log.Information("entro nell else . tipico vale true");
         //                    string filename = "P_" + value.ToString().PadLeft(3, '0') + "PAR.DAT";
-        //                    if (File.Exists(ConfigurationManager.AppSettings["Directory_Asar"].ToString() + "\\" + filename))
+        //                    if (File.Exists(DIRECTORY_ASAR+ "\\" + filename))
         //                    {
         //                        List<string> dataWorked = new List<string>(data);
         //                        string[] pagine = dataWorked.ToArray();
-        //                        string[] content = File.ReadAllLines(ConfigurationManager.AppSettings["Directory_Asar"].ToString() + "\\" + filename);
+        //                        string[] content = File.ReadAllLines(DIRECTORY_ASAR+ "\\" + filename);
 
         //                        for (int indexP = 0; indexP < pagine.Length; indexP++)
         //                        {
@@ -730,7 +743,7 @@ namespace GwpLayoutTouchAsar
         //                        }
 
         //                        fileNewContent.Sort();
-        //                        File.WriteAllLines((ConfigurationManager.AppSettings["Directory_Temporary"].ToString() + "\\" + filename), fileNewContent.ToArray());
+        //                        File.WriteAllLines((DIRECTORY_TEMPORARY+ "\\" + filename), fileNewContent.ToArray());
         //                        Log.Information("Saving " + filename + " file to directory: " + ConfigurationManager.AppSettings["Directory_Temporary"].ToString());
         //                        fileTipico.Add(filename);
         //                        fileTipico.Sort();
@@ -739,7 +752,7 @@ namespace GwpLayoutTouchAsar
         //                    {
         //                        List<string> dataWorked = new List<string>(data);
         //                        string[] pagine = dataWorked.ToArray();
-        //                        string[] content = File.ReadAllLines(ConfigurationManager.AppSettings["Directory_Asar"].ToString() + "\\" + P_REGPAR);
+        //                        string[] content = File.ReadAllLines(DIRECTORY_ASAR+ "\\" + P_REGPAR);
 
         //                        for (int indexP = 0; indexP < pagine.Length; indexP++)
         //                        {
@@ -756,7 +769,7 @@ namespace GwpLayoutTouchAsar
         //                        List<string> newContent = new List<string>(content.ToArray<string>());
         //                        newContent.AddRange(dataWorked.AsEnumerable<string>());
         //                        newContent.Sort();
-        //                        File.WriteAllLines((ConfigurationManager.AppSettings["Directory_Temporary"].ToString() + "\\" + filename), newContent.ToArray());
+        //                        File.WriteAllLines((DIRECTORY_TEMPORARY+ "\\" + filename), newContent.ToArray());
         //                        Log.Information("Saving " + filename + " file to directory: " + ConfigurationManager.AppSettings["Directory_Temporary"].ToString());
         //                        fileTipico.Add(filename);
         //                        fileTipico.Sort();
@@ -768,7 +781,7 @@ namespace GwpLayoutTouchAsar
         //        else {
         //                List<string> dataWorked = new List<string>(data);
         //                string[] pagine = dataWorked.ToArray();
-        //                string[] content = File.ReadAllLines(ConfigurationManager.AppSettings["Directory_Asar"].ToString() + "\\" + P_REGPAR);                      
+        //                string[] content = File.ReadAllLines(DIRECTORY_ASAR+ "\\" + P_REGPAR);                      
 
         //                for (int indexP = 0; indexP < pagine.Length; indexP++)
         //                {
@@ -785,7 +798,7 @@ namespace GwpLayoutTouchAsar
         //                List<string> newContent = new List<string>(content.ToArray<string>());
         //                newContent.AddRange(dataWorked.AsEnumerable<string>());
         //                newContent.Sort();
-        //                File.WriteAllLines((ConfigurationManager.AppSettings["Directory_Temporary"].ToString() + "\\" + P_REGPAR), newContent.ToArray());
+        //                File.WriteAllLines((DIRECTORY_TEMPORARY+ "\\" + P_REGPAR), newContent.ToArray());
         //                return true;
         //        }
         //    }
@@ -801,7 +814,7 @@ namespace GwpLayoutTouchAsar
             Log.Information("ENTRO in aggiornaRighePar : " + filename + " dataWorked.len: " + dataWorked.Count);
 
             string[] righeNuove = dataWorked.ToArray();
-            string[] righeP_regpar = File.ReadAllLines(ConfigurationManager.AppSettings["Directory_Asar"].ToString() + "\\" + filename);
+            string[] righeP_regpar = File.ReadAllLines(DIRECTORY_ASAR+ "\\" + filename);
 
             //pulisco il p_regpar, tolgo le righe "PD0", e "PRES"
             for (int indexP = 0; indexP < righeP_regpar.Length; indexP++)
@@ -871,7 +884,7 @@ namespace GwpLayoutTouchAsar
             Log.Information("ENTRO in aggiornaRighePar : " + filename);
          
             string[] righeNuove = dataWorked.ToArray();
-            string[] righeP_regpar = File.ReadAllLines(ConfigurationManager.AppSettings["Directory_Asar"].ToString() + "\\" + filename);
+            string[] righeP_regpar = File.ReadAllLines(DIRECTORY_ASAR+ "\\" + filename);
 
             for (int indexP = 0; indexP < righeNuove.Length; indexP++)
             {
@@ -914,6 +927,7 @@ namespace GwpLayoutTouchAsar
             {
                 if (casse != null)
                 {
+                    Log.Information(" (casse != null) ");
                     fileTipico.Clear();
                     foreach (int value in casse) 
                     {
@@ -921,8 +935,9 @@ namespace GwpLayoutTouchAsar
                         Log.Information("cassa: " + value + " - tipico: " + tipico);
                         if (!tipico)
                         {
+                            Log.Information(" if (!tipico)" );
                             string filename = "P_" + value.ToString().PadLeft(3, '0') + "PAR.DAT";
-                            string path = ConfigurationManager.AppSettings["Directory_Asar"].ToString() + "\\" + filename;
+                            string path = DIRECTORY_ASAR+ "\\" + filename;
                             if (File.Exists(path))
                             {
                                 if (!CompareWithStandard(filename))
@@ -939,23 +954,25 @@ namespace GwpLayoutTouchAsar
                                     //}
 
                                     fileNewContent.Sort();
-                                    File.WriteAllLines((ConfigurationManager.AppSettings["Directory_Temporary"].ToString() + "\\" + filename), fileNewContent.ToArray());
-                                    Log.Information("Saving " + filename + " file to directory: " + ConfigurationManager.AppSettings["Directory_Temporary"].ToString());
+                                    File.WriteAllLines((DIRECTORY_TEMPORARY+ "\\" + filename), fileNewContent.ToArray());
+                                    Log.Information("Saving " + filename + " file to directory: " + DIRECTORY_TEMPORARY);
                                     fileTipico.Add(filename);
                                     fileTipico.Sort();
                                 }
                                 else //compare true
                                 {
+                                    Log.Information("File Tipico is  equal to Standard.");
                                     // Create canc_P_XXXPar.DAT into temporary directory
-                                    FileOperations(ActonFile.Creating, (ConfigurationManager.AppSettings["Directory_Temporary"].ToString() + "\\" + "canc" + filename), string.Empty);
+                                    FileOperations(ActonFile.Creating, (DIRECTORY_TEMPORARY + "\\" + "canc" + filename), string.Empty);
                                     Log.Information("Create canc_P_XXXPar.DAT into temporary directory: " + filename);
 
                                     // Delete tipico file from directory casse
-                                    FileOperations(ActonFile.Deleting, (ConfigurationManager.AppSettings["Directory_Asar"].ToString() + "\\" + filename), string.Empty);
+                                    FileOperations(ActonFile.Deleting, (DIRECTORY_ASAR + "\\" + filename), string.Empty);
+                                    FileOperations(ActonFile.Deleting, (DIRECTORY_CASSELAN + "\\" + filename), string.Empty);
                                     Log.Information("File Tipico is equal to Standard so deleting it: " + filename);
 
                                     // Copy canc_P_XXXParDAT into backup directory
-                                    FileOperations(ActonFile.Coping, (ConfigurationManager.AppSettings["Directory_Temporary"].ToString() + "\\" + "canc" + filename), nameBackupDirectory + "\\" + "canc" + filename);
+                                    FileOperations(ActonFile.Coping, (DIRECTORY_TEMPORARY + "\\" + "canc" + filename), nameBackupDirectory + "\\" + "canc" + filename);
                                     Log.Information("Coping canc_P_XXXPar.DAT into backup directory: " + filename);
 
                                     List<string> dataWorked = new List<string>(data);
@@ -966,12 +983,13 @@ namespace GwpLayoutTouchAsar
                                     List<string> newContent = new List<string>(content.ToArray<string>());
                                     //newContent.AddRange(dataWorked.AsEnumerable<string>());
                                     newContent.Sort();
-                                    File.WriteAllLines((ConfigurationManager.AppSettings["Directory_Temporary"].ToString() + "\\" + P_REGPAR), newContent.ToArray());
-                                    Log.Information("Saving P_REGPAR.DAT file to directory: " + ConfigurationManager.AppSettings["Directory_Temporary"].ToString());
+                                    File.WriteAllLines((DIRECTORY_TEMPORARY+ "\\" + P_REGPAR), newContent.ToArray());
+                                    Log.Information("Saving P_REGPAR.DAT file to directory: " + DIRECTORY_TEMPORARY);
                                 }
                             }
                             else
                             { //file tipico non esiste
+                                Log.Information(" file tipico non esiste");
                                 List<string> dataWorked = new List<string>(data);
 
                                 string[] content = aggiornaRighePar(data, P_REGPAR, dataWorked);
@@ -979,9 +997,9 @@ namespace GwpLayoutTouchAsar
                                 List<string> newContent = new List<string>(content.ToArray<string>());
                                 //newContent.AddRange(dataWorked.AsEnumerable<string>());
                                 newContent.Sort();
-                                //File.WriteAllLines((ConfigurationManager.AppSettings["Directory_Temporary"].ToString() + "\\" + filename), newContent.ToArray());
-                                File.WriteAllLines((ConfigurationManager.AppSettings["Directory_Temporary"].ToString() + "\\" + P_REGPAR), newContent.ToArray());
-                                Log.Information("Saving " + filename + " file to directory: " + ConfigurationManager.AppSettings["Directory_Temporary"].ToString());
+                                //File.WriteAllLines((DIRECTORY_TEMPORARY+ "\\" + filename), newContent.ToArray());
+                                File.WriteAllLines((DIRECTORY_TEMPORARY+ "\\" + P_REGPAR), newContent.ToArray());
+                                Log.Information("Saving " + P_REGPAR + " file to directory: " + DIRECTORY_TEMPORARY);
 
                                 //qui
                                 //se il file tipico non esiste non lo aggiungo
@@ -991,10 +1009,11 @@ namespace GwpLayoutTouchAsar
                         }
                         else //tipico
                         {
-                            Log.Information("entro nell else . tipico vale true");
+                            Log.Information("Entro nell else . tipico: " + tipico);
                             string filename = "P_" + value.ToString().PadLeft(3, '0') + "PAR.DAT";
-                            if (File.Exists(ConfigurationManager.AppSettings["Directory_Asar"].ToString() + "\\" + filename))
+                            if (File.Exists(DIRECTORY_ASAR+ "\\" + filename))
                             {
+                                Log.Information("(if) Trovato : " + filename);
                                 List<string> dataWorked = new List<string>(data);
 
                                 string[] content = aggiornaRighePar(data, filename, dataWorked);
@@ -1006,13 +1025,14 @@ namespace GwpLayoutTouchAsar
                                 //}
 
                                 fileNewContent.Sort();
-                                File.WriteAllLines((ConfigurationManager.AppSettings["Directory_Temporary"].ToString() + "\\" + filename), fileNewContent.ToArray());
-                                Log.Information("Saving " + filename + " file to directory: " + ConfigurationManager.AppSettings["Directory_Temporary"].ToString());
+                                File.WriteAllLines((DIRECTORY_TEMPORARY+ "\\" + filename), fileNewContent.ToArray());
+                                Log.Information("Saving " + filename + " file to directory: " + DIRECTORY_TEMPORARY);
                                 fileTipico.Add(filename);
                                 fileTipico.Sort();
                             }
                             else
                             {
+                                Log.Information("(else)" );
                                 List<string> dataWorked = new List<string>(data);
 
                                 string[] content = aggiornaRighePar(data, P_REGPAR, dataWorked);
@@ -1020,8 +1040,8 @@ namespace GwpLayoutTouchAsar
                                 List<string> newContent = new List<string>(content.ToArray<string>());
                                 //newContent.AddRange(dataWorked.AsEnumerable<string>());
                                 newContent.Sort();
-                                File.WriteAllLines((ConfigurationManager.AppSettings["Directory_Temporary"].ToString() + "\\" + filename), newContent.ToArray());
-                                Log.Information("Saving " + filename + " file to directory: " + ConfigurationManager.AppSettings["Directory_Temporary"].ToString());
+                                File.WriteAllLines((DIRECTORY_TEMPORARY+ "\\" + filename), newContent.ToArray());
+                                Log.Information("Saving " + filename + " file to directory: " + DIRECTORY_TEMPORARY);
                                 fileTipico.Add(filename);
                                 fileTipico.Sort();
                             }
@@ -1032,6 +1052,7 @@ namespace GwpLayoutTouchAsar
                 }
                 else
                 {
+                    Log.Information(" (casse == null) ");
                     List<string> dataWorked = new List<string>(data);
                     
                     string[] content = aggiornaRighePar(data, P_REGPAR, dataWorked);
@@ -1039,7 +1060,8 @@ namespace GwpLayoutTouchAsar
                     List<string> newContent = new List<string>(content.ToArray<string>());
                     //newContent.AddRange(dataWorked.AsEnumerable<string>());
                     newContent.Sort();
-                    File.WriteAllLines((ConfigurationManager.AppSettings["Directory_Temporary"].ToString() + "\\" + P_REGPAR), newContent.ToArray());
+                    File.WriteAllLines((DIRECTORY_TEMPORARY+ "\\" + P_REGPAR), newContent.ToArray());
+                    Log.Information("Saving " + P_REGPAR + " file to directory: " + DIRECTORY_TEMPORARY);
                     Log.Information("ESCO DA CreateP_REGPAR_file 2 - true");
                     return true;
                 }
@@ -1057,9 +1079,9 @@ namespace GwpLayoutTouchAsar
             Log.Information("ENTRO in CompareWithStandard. filename: " + filename);
             Boolean flag = false;
             // Make a list copy...
-            List<string> regParData = File.ReadAllLines(ConfigurationManager.AppSettings["Directory_Asar"].ToString() + "\\" + filename).ToList<string>();
+            List<string> regParData = File.ReadAllLines(DIRECTORY_ASAR+ "\\" + filename).ToList<string>();
             List<string> workedData = regParData.ToList<string>();
-            List<string> pregParData_sotto_server = File.ReadAllLines(ConfigurationManager.AppSettings["Directory_Asar"].ToString() + "\\" + P_REGPAR).ToList<string>();
+            List<string> pregParData_sotto_server = File.ReadAllLines(DIRECTORY_ASAR+ "\\" + P_REGPAR).ToList<string>();
             List<string> workedPregParData_sotto_server = pregParData_sotto_server.ToList<string>();
 
             // Delete the extra row from tipico file...
@@ -1101,7 +1123,7 @@ namespace GwpLayoutTouchAsar
             }
 
             // Compared tipico file with standard file...
-            //flag = regParData.SequenceEqual(File.ReadAllLines(ConfigurationManager.AppSettings["Directory_Asar"].ToString() + "\\" + P_REGPAR));
+            //flag = regParData.SequenceEqual(File.ReadAllLines(DIRECTORY_ASAR+ "\\" + P_REGPAR));
             flag = regParData.SequenceEqual(pregParData_sotto_server);
             Log.Information("ESCO Da CompareWithStandard. flag: " + flag);
             return flag;
@@ -1117,13 +1139,13 @@ namespace GwpLayoutTouchAsar
                     List<string> newContent = new List<string>(data.ToArray<string>());
                     newContent.Sort();
                     Log.Information("Creating a new S_PLUREF.DAT file to temporary directory");
-                    File.WriteAllLines((ConfigurationManager.AppSettings["Directory_Temporary"].ToString() + "\\" + S_PLUREF), newContent.ToArray());
+                    File.WriteAllLines((DIRECTORY_TEMPORARY+ "\\" + S_PLUREF), newContent.ToArray());
                     return true;
                 }
                 else
                 {
                     string s = string.Empty;
-                    string[] content = File.ReadAllLines((ConfigurationManager.AppSettings["Directory_Asar"].ToString() + "\\" + S_PLUREF));
+                    string[] content = File.ReadAllLines((DIRECTORY_ASAR+ "\\" + S_PLUREF));
                     string[] pagine = data.ToArray();
 
                     Log.Information("Opening S_PLUREF.DAT file from directory: " + ConfigurationManager.AppSettings["Directory_Asar"].ToString());
@@ -1143,8 +1165,8 @@ namespace GwpLayoutTouchAsar
                     List<string> newContent = new List<string>(content.ToArray<string>());
                     newContent.AddRange(data.AsEnumerable<string>());
                     newContent.Sort();
-                    File.WriteAllLines((ConfigurationManager.AppSettings["Directory_Temporary"].ToString() + "\\" + S_PLUREF), newContent.ToArray());
-                    Log.Information("Saving S_PLUREF.DAT file to directory: " + ConfigurationManager.AppSettings["Directory_Temporary"].ToString());
+                    File.WriteAllLines((DIRECTORY_TEMPORARY+ "\\" + S_PLUREF), newContent.ToArray());
+                    Log.Information("Saving S_PLUREF.DAT file to directory: " + DIRECTORY_TEMPORARY);
                     return true;
                 }
             }
