@@ -39,6 +39,7 @@ namespace GwpLayoutTouchAsar
         private static FileSystemWatcher watcher = null;
         private const string S_PLUREF = "S_PLUREF.DAT";
         private const string P_REGPAR = "P_REGPAR.DAT";
+        private const string P_JOLLYPAR = "P_???PAR.DAT";
         private const string Dictionary = "Dictionary.bin";
         private static string nameBackupDirectory = "";
 
@@ -101,7 +102,7 @@ namespace GwpLayoutTouchAsar
             Log.Information("\r\n");
             Log.Information("\r\n");
             Log.Information("************************************************************");
-            Log.Information("** Starting GwpLayoutTouchAsar Service ver 1.0.0.8-P-3129 **");
+            Log.Information("** Starting GwpLayoutTouchAsar Service ver 1.0.0.10-P-3927 **");
             Log.Information("************************************************************");
 
             string fileJasonDaElaborare = ConfigurationManager.AppSettings["FilenameJson"].ToString();
@@ -134,38 +135,6 @@ namespace GwpLayoutTouchAsar
             if (e.Name.Equals(ConfigurationManager.AppSettings["FilenameJson"].ToString()))
             {
                 inizioElaborazione(e.FullPath, e.Name);
-                /*
-                Log.Information("**** Keyboard.Json file found ****\r\n");
-
-                Log.Information("Coping new file into Processing directory");
-                Log.Information("e.FullPath: " + e.FullPath + " - e.Name : " + e.Name);
-                FileOperations(ActonFile.Coping, e.FullPath, (DIRECTORY_PROCESSING+ "\\" + e.Name));
-
-                Log.Information("Reading Json file");
-                var json = File.ReadAllText(e.FullPath);             
-
-                try
-                {
-                    Log.Information("Validation Json file...");
-                    Keyboard JsonObj = JsonConvert.DeserializeObject<Keyboard>(json);
-                    Log.Information("Json validation OK");
-                    
-                    ProcessingJSON(JsonObj);
-
-                    Log.Information("Cleaning directory");
-                    CleanUP();
-                }
-                catch (Exception ex)
-                {
-                    // TODO LOG
-                    Log.Error("Json validation KO");
-                    Log.Error("Exception occurred : " + ex.Message);
-                    UpdateStatus(string.Empty, string.Empty,  0, 0, 0);
-                    string newDirectory = (DIRECTORY_ERROR+ "\\" + DateTime.Now.ToString("ddMMyyyyHHmm"));
-                    Directory.CreateDirectory(DIRECTORY_ERROR+ "\\" + newDirectory);
-                    FileOperations(ActonFile.Moving, e.FullPath, (newDirectory + "\\" + e.Name));
-                }
-                */
                 
             }
         }
@@ -186,6 +155,8 @@ namespace GwpLayoutTouchAsar
                 Keyboard JsonObj = JsonConvert.DeserializeObject<Keyboard>(json);
                 Log.Information("Json validation OK");
 
+                saveFiles();
+
                 ProcessingJSON(JsonObj);
 
                 Log.Information("Cleaning directory");
@@ -203,14 +174,47 @@ namespace GwpLayoutTouchAsar
             }
 
         }
+        private static void saveFiles()
+        {
+            Log.Information("ENTRO IN saveFiles()");
+            
+            if (!Directory.Exists(DIRECTORY_OLD))
+            {
+                Log.Information("creo cartella : " + DIRECTORY_OLD);
+                Directory.CreateDirectory(DIRECTORY_OLD);
+            }
 
+            string[] listFiles = Directory.GetFiles(DIRECTORY_OLD, "*.*");
+            string[] listPar = Directory.GetFiles(DIRECTORY_ASAR, "P_???PAR.DAT");
+
+            Log.Information("svuoto cartella old");
+            foreach (string fileDaCancellare in listFiles)
+            {
+                Log.Information("fileDaCancellare: " + fileDaCancellare);
+                FileOperations(ActonFile.Deleting, fileDaCancellare, string.Empty);
+            }
+
+            Log.Information("copio tutti i P_REGPAR sotto old");
+            foreach (string fileDacopiare in listPar)
+            {
+                Log.Information("fileDacopiare: " + fileDacopiare);
+                string nomeFile = fileDacopiare.Substring(fileDacopiare.LastIndexOf("\\")+1);
+                Log.Information("nomeFile: " + nomeFile);
+                FileOperations(ActonFile.Coping, fileDacopiare, (DIRECTORY_OLD + "\\" + nomeFile));
+            }
+
+            Log.Information("copio S_PLUREF sotto old");
+            FileOperations(ActonFile.Coping, (DIRECTORY_ASAR + "\\" + S_PLUREF), (DIRECTORY_OLD + "\\" + S_PLUREF));
+
+            Log.Information("ESCO  DA saveFiles()");
+        }
         private static void CleanUP()
         {
             Log.Information("Cleaning directory...");
             Log.Information("Cleaning Incoming directory");
-            FileOperations(ActonFile.Deleting, (DIRECTORY_INCOMING+ "\\" + ConfigurationManager.AppSettings["FilenameJson"].ToString()), string.Empty);
+            FileOperations(ActonFile.Deleting, (DIRECTORY_INCOMING + "\\" + ConfigurationManager.AppSettings["FilenameJson"].ToString()), string.Empty);
             Log.Information("Cleaning Processing directory");
-            FileOperations(ActonFile.Deleting, (DIRECTORY_PROCESSING+ "\\" + ConfigurationManager.AppSettings["FilenameJson"].ToString()), string.Empty);
+            FileOperations(ActonFile.Deleting, (DIRECTORY_PROCESSING + "\\" + ConfigurationManager.AppSettings["FilenameJson"].ToString()), string.Empty);
             Log.Information("Cleaning Temporary directory");
             Directory.EnumerateFiles(DIRECTORY_TEMPORARY, "*.Dat").ToList().ForEach(x => File.Delete(x));            
         }
@@ -329,18 +333,18 @@ namespace GwpLayoutTouchAsar
 
                         if (CreateS_PLUREF_file(S_PluRefData, keyboards.PulisciTutto))
                         {
-                            Log.Information("Created directory old");
-                            Directory.CreateDirectory(DIRECTORY_OLD);                            
-                            Log.Information("Copied current file S_PLUREF.DAT into old directory...");
-                            FileOperations(ActonFile.Coping, (DIRECTORY_CASSE + "\\" + S_PLUREF), (DIRECTORY_OLD + "\\" + S_PLUREF));
+                            //Log.Information("Created directory old");
+                            //Directory.CreateDirectory(DIRECTORY_OLD);
+                            //Log.Information("Copied current file S_PLUREF.DAT into old directory...");
+                            //FileOperations(ActonFile.Coping, (DIRECTORY_CASSE + "\\" + S_PLUREF), (DIRECTORY_OLD + "\\" + S_PLUREF));
                             Log.Information("Copied new file S_PLUREF.dat into backup directory...");
                             FileOperations(ActonFile.Coping, (DIRECTORY_TEMPORARY+ "\\" + S_PLUREF), nameBackupDirectory + "\\" + S_PLUREF);
                             Log.Information("Copied new file S_PLUREF.dat into casse directory...");
                             FileOperations(ActonFile.Coping, (DIRECTORY_TEMPORARY+ "\\" + S_PLUREF), (DIRECTORY_CASSE + "\\" +  S_PLUREF));
                             
                             //DMA-P-3129#A BEG
-                            Log.Information("Copied current file S_PLUREF.DAT into old directory (casseLan)...");                            
-                            FileOperations(ActonFile.Coping, (DIRECTORY_CASSELAN+ "\\" + S_PLUREF), (DIRECTORY_OLD + "\\" + S_PLUREF));
+                            //Log.Information("Copied current file S_PLUREF.DAT into old directory (casseLan)...");                            
+                            //FileOperations(ActonFile.Coping, (DIRECTORY_CASSELAN+ "\\" + S_PLUREF), (DIRECTORY_OLD + "\\" + S_PLUREF));
 
                             Log.Information("Copied new file S_PLUREF.dat into casse directory...");
                             FileOperations(ActonFile.Coping, (DIRECTORY_TEMPORARY+ "\\" + S_PLUREF), (DIRECTORY_CASSELAN+ "\\" + S_PLUREF));
@@ -449,15 +453,15 @@ namespace GwpLayoutTouchAsar
 
                         if (CreateP_REGPAR_file(P_RegParData, (lt.Casse != null ? lt.Casse.ToList<int>() : null), lt.Tipo))
                         {
-                            Log.Information("Created directory old");
-                            Directory.CreateDirectory(DIRECTORY_OLD);
+                            //Log.Information("Created directory old");
+                            //Directory.CreateDirectory(DIRECTORY_OLD);
 
                             if (fileTipico.Count > 0)
                             {
                                 foreach (string filename in fileTipico)
                                 {
-                                    Log.Information("Copied current " + filename + " into old directory");
-                                    FileOperations(ActonFile.Coping, (DIRECTORY_CASSE + "\\" + filename), (DIRECTORY_OLD + "\\" + filename));
+                                    //Log.Information("Copied current " + filename + " into old directory");
+                                    //FileOperations(ActonFile.Coping, (DIRECTORY_CASSE + "\\" + filename), (DIRECTORY_OLD + "\\" + filename));
                                     
                                     Log.Information("Copied current " + filename + " into backup directory");
                                     FileOperations(ActonFile.Coping, (DIRECTORY_TEMPORARY+ "\\" + filename), nameBackupDirectory + "\\" + filename);
@@ -466,8 +470,8 @@ namespace GwpLayoutTouchAsar
                                     FileOperations(ActonFile.Coping, (DIRECTORY_TEMPORARY+ "\\" + filename), (DIRECTORY_CASSE + "\\" + filename));
 
                                     //DMA-P-3129#A BEG
-                                    Log.Information("Copied current " + filename + " into old directory (casseLan)");
-                                    FileOperations(ActonFile.Coping, (DIRECTORY_CASSELAN+ "\\" + filename), (DIRECTORY_OLD + "\\" + filename));
+                                    //Log.Information("Copied current " + filename + " into old directory (casseLan)");
+                                    //FileOperations(ActonFile.Coping, (DIRECTORY_CASSELAN+ "\\" + filename), (DIRECTORY_OLD + "\\" + filename));
 
                                     Log.Information("Copied new " + filename + " into casse directory (casseLan)");
                                     FileOperations(ActonFile.Coping, (DIRECTORY_TEMPORARY+ "\\" + filename), (DIRECTORY_CASSELAN+ "\\" + filename));
@@ -480,8 +484,8 @@ namespace GwpLayoutTouchAsar
                             try
                             {
                                 Log.Information("Dopo i file tipici, copio il P_REGPAR");
-                                Log.Information("Copied current file P_REGPAR.DAT into old directory");
-                                FileOperations(ActonFile.Coping, (DIRECTORY_CASSE + "\\" + P_REGPAR), (DIRECTORY_OLD + "\\" + P_REGPAR));
+                                //Log.Information("Copied current file P_REGPAR.DAT into old directory");
+                                //FileOperations(ActonFile.Coping, (DIRECTORY_CASSE + "\\" + P_REGPAR), (DIRECTORY_OLD + "\\" + P_REGPAR));
 
                                 Log.Information("Copied current file P_REGPAR.DAT into backup directory");
                                 FileOperations(ActonFile.Coping, (DIRECTORY_TEMPORARY + "\\" + P_REGPAR), nameBackupDirectory + "\\" + P_REGPAR);
@@ -490,8 +494,8 @@ namespace GwpLayoutTouchAsar
                                 FileOperations(ActonFile.Coping, (DIRECTORY_TEMPORARY + "\\" + P_REGPAR), (DIRECTORY_CASSE + "\\" + P_REGPAR));
 
                                 //DMA-P-3129#A BEG
-                                Log.Information("Copied current file P_REGPAR.DAT into old directory (casseLan)");
-                                FileOperations(ActonFile.Coping, (DIRECTORY_CASSELAN + "\\" + P_REGPAR), (DIRECTORY_OLD + "\\" + P_REGPAR));
+                                //Log.Information("Copied current file P_REGPAR.DAT into old directory (casseLan)");
+                                //FileOperations(ActonFile.Coping, (DIRECTORY_CASSELAN + "\\" + P_REGPAR), (DIRECTORY_OLD + "\\" + P_REGPAR));
 
                                 Log.Information("Copied new P_REGPAR.DAT into casse directory (casseLan)");
                                 FileOperations(ActonFile.Coping, (DIRECTORY_TEMPORARY + "\\" + P_REGPAR), (DIRECTORY_CASSELAN + "\\" + P_REGPAR));
@@ -1150,9 +1154,12 @@ namespace GwpLayoutTouchAsar
 
                     Log.Information("Opening S_PLUREF.DAT file from directory: " + ConfigurationManager.AppSettings["Directory_Asar"].ToString());
 
+
+                    //DMA-P-3927#D BEG
+                    /*
                     for (int indexP = 0; indexP < pagine.Length; indexP++)
                     {
-                         for (int indexC = 0; indexC < content.Length; indexC++)
+                        for (int indexC = 0; indexC < content.Length; indexC++)
                         {
                             if (content[indexC].StartsWith(pagine[indexP].Substring(0, 5)))
                             {
@@ -1161,6 +1168,22 @@ namespace GwpLayoutTouchAsar
                             }
                         }
                     }
+                    */
+                    //DMA-P-3927#D END
+
+                    //DMA-P-3927#A BEG
+                    for (int indexC = 0; indexC < content.Length; indexC++)
+                    {
+                        for (int indexP = 0; indexP < pagine.Length; indexP++)
+                        {                            
+                            if (content[indexC].StartsWith(pagine[indexP].Substring(0, 10)))
+                            {
+                                content[indexC] = pagine[indexP];
+                                data.Remove(pagine[indexP]);
+                            }
+                        }
+                    }
+                    //DMA-P-3927#A END
 
                     List<string> newContent = new List<string>(content.ToArray<string>());
                     newContent.AddRange(data.AsEnumerable<string>());
