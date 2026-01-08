@@ -102,7 +102,7 @@ namespace GwpLayoutTouchAsar
             Log.Information("\r\n");
             Log.Information("\r\n");
             Log.Information("************************************************************");
-            Log.Information("** Starting GwpLayoutTouchAsar Service ver 1.0.0.10-P-3927 **");
+            Log.Information("** Starting GwpLayoutTouchAsar Service ver 1.0.0.11-P-233332 **");
             Log.Information("************************************************************");
 
             string fileJasonDaElaborare = ConfigurationManager.AppSettings["FilenameJson"].ToString();
@@ -819,6 +819,7 @@ namespace GwpLayoutTouchAsar
 
             string[] righeNuove = dataWorked.ToArray();
             string[] righeP_regpar = File.ReadAllLines(DIRECTORY_ASAR+ "\\" + filename);
+            List<string> righePres = new List<string>();  //P-233332-CGA#A
 
             //pulisco il p_regpar, tolgo le righe "PD0", e "PRES"
             for (int indexP = 0; indexP < righeP_regpar.Length; indexP++)
@@ -828,19 +829,32 @@ namespace GwpLayoutTouchAsar
                     righeP_regpar[indexP].StartsWith(KEY_VER))
                 {
                     Log.Information("elimino : >" + righeP_regpar[indexP] + "<" + " - indexP : " + indexP);
+                    if (righeP_regpar[indexP].StartsWith(KEY_PRES))
+                    {
+                        //P-233332-CGA#A BEG
+                        string prefix = righeP_regpar[indexP].Substring(0, 5);
+                        Log.Debug("prefix : >" + prefix + "<");
+
+                        if (prefix.CompareTo("PRES8") > 0)
+                        {
+                            righePres.Add(righeP_regpar[indexP]);
+                            Log.Debug("aggiungo alla lista");
+                        }
+                        //P-233332-CGA#A END
+                    }
+                    
                     righeP_regpar[indexP] = "";
                 }
             }
 
             //inserisco le righe "DYKY" e "DYTX"
-            
-            for (int i=0; i<righeNuove.Length; i++)
+            for (int i = 0; i < righeNuove.Length; i++)
             {
                 if (righeNuove[i].StartsWith(KEY_DYKY)  || 
                     righeNuove[i].StartsWith(KEY_DYTX))    {
                     //cerco la riga nel P_REGPAR per sostituirla
 
-                for (int j=0; j<righeP_regpar.Length; j++)
+                    for (int j = 0; j < righeP_regpar.Length; j++)
                     {
                         if (righeP_regpar[j].StartsWith(righeNuove[i].Substring(0, 5)))
                         {
@@ -873,7 +887,16 @@ namespace GwpLayoutTouchAsar
                 }
             }
 
-            lista_pregpar.Sort();
+            //P-233332-CGA#A BEG
+            Log.Debug("righePres.Count: >" + righePres.Count + "<");
+            for (int indexPres = 0; indexPres < righePres.Count; indexPres++)
+            {                
+                Log.Information("aggiungo righe pres : >" + righePres[indexPres] + "<");
+                lista_pregpar.Add(righePres[indexPres]);
+            }
+            //P-233332-CGA#A END
+
+            lista_pregpar.Sort();            
           
             string[] p_regpar_finale;
 
